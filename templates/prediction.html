@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Prediction Center</title>
+
+<link rel="stylesheet" href="../static/css/dashboard.css">
+
+<link rel="stylesheet" href="../static/css/prediction.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar">
+
+<div class="logo">
+
+<i class="fa-solid fa-hospital"></i>
+
+<h2>Hospital HMS</h2>
+
+</div>
+
+<ul>
+
+<li>
+<a href="dashboard.html">
+<i class="fa-solid fa-house"></i>
+Dashboard
+</a>
+</li>
+
+<li>
+<a href="patients.html">
+<i class="fa-solid fa-user-injured"></i>
+Patients
+</a>
+</li>
+
+<li>
+<a href="doctors.html">
+<i class="fa-solid fa-user-doctor"></i>
+Doctors
+</a>
+</li>
+
+<li>
+<a href="nurses.html">
+<i class="fa-solid fa-user-nurse"></i>
+Nurses
+</a>
+</li>
+
+<li>
+<a href="beds.html">
+<i class="fa-solid fa-bed"></i>
+Beds
+</a>
+</li>
+
+<li>
+<a href="pharmacy.html">
+<i class="fa-solid fa-pills"></i>
+Pharmacy
+</a>
+</li>
+
+<li class="active">
+<a href="prediction.html">
+<i class="fa-solid fa-brain"></i>
+Prediction
+</a>
+</li>
+
+<li>
+<a href="billing.html">
+<i class="fa-solid fa-file-invoice-dollar"></i>
+Billing
+</a>
+</li>
+
+<li>
+<a href="reports.html">
+<i class="fa-solid fa-chart-line"></i>
+Reports
+</a>
+</li>
+
+</ul>
+
+</aside>
+
+<!-- ================= MAIN ================= -->
+
+<main class="main">
+
+<header>
+
+<div>
+
+<h1>Prediction Center</h1>
+
+<p>AI Powered Hospital Prediction System</p>
+
+</div>
+
+<div class="header-right">
+
+<input
+type="text"
+id="searchPrediction"
+placeholder="Search Prediction">
+
+<button
+class="add-btn"
+id="refreshPrediction">
+
+<i class="fa-solid fa-rotate-right"></i>
+
+Refresh
+
+</button>
+
+</div>
+
+</header>
+
+<!-- ================= DASHBOARD CARDS ================= -->
+
+<section class="cards">
+
+<div class="card">
+
+<i class="fa-solid fa-virus"></i>
+
+<h3>Disease Predictions</h3>
+
+<h2 id="diseaseCount">0</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-pills"></i>
+
+<h3>Medicine Predictions</h3>
+
+<h2 id="medicineCount">0</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-bed"></i>
+
+<h3>Stay Predictions</h3>
+
+<h2 id="stayCount">0</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-chart-line"></i>
+
+<h3>Total Predictions</h3>
+
+<h2 id="totalPrediction">0</h2>
+
+</div>
+
+</section>
+<!-- ================= PREDICTION MODULES ================= -->
+
+<section class="prediction-center">
+
+    <!-- ================= DISEASE PREDICTION ================= -->
+
+    <div class="prediction-card">
+
+        <div class="prediction-header">
+
+            <i class="fa-solid fa-virus"></i>
+
+            <h2>Disease Prediction</h2>
+
+        </div>
+
+        <p>
+            Predict possible diseases using patient health information and machine learning.
+        </p>
+
+        <ul class="prediction-features">
+
+            <li>
+                <i class="fa-solid fa-check"></i>
+                Disease Classification
+            </li>
+
+            <li>
+                <i class="fa-solid fa-check"></i>
+                Early Diagnosis Support
+            </li>
+
+            <li>
+                <i class="fa-solid fa-check"></i>
+                Health Risk Analysis
+            </li>
+
+        </ul>
+
+        <button
+            class="predict-btn"
+            id="openDiseasePrediction">
+
+            <i class="fa-solid fa-stethoscope"></i>
+
+            Open Prediction
+
+        </button>
+
+    </div>
+
+    <!-- ================= MEDICINE DEMAND ================= -->
+
+    <div class="prediction-card">
+
+        <div class="prediction-header">
+
+            <i class="fa-solid fa-pills"></i>
+
+            <h2>Medicine Demand</h2>
+
+        </div>
+
+        <p>
+            Forecast future medicine demand using historical hospital data.
+        </p>
+
+        <ul class="prediction-features">
+
+            <li>
+                <i class="fa-solid fa-check"></i>
+                Demand Forecasting
+            </li>
+
+            <li>
+                <i class="fa-solid fa-check"></i>
+                Inventory Planning
+            </li>
+
+            <li>
+                <i class="fa-solid fa-check"></i>
+                Stock Optimization
+            </li>
+
+        </ul>
+
+        <button
+            class="predict-btn"
+            id="openMedicinePrediction">
+
+            <i class="fa-solid fa-brain"></i>
+
+            Open Prediction
+
+        </button>
+
+    </div>
+
+    <!-- ================= LENGTH OF STAY ================= -->
+
+    <div class="prediction-card">
+
+        <div class="prediction-header">
+
+            <i class="fa-solid fa-bed"></i>
+
+            <h2>Length of Stay</h2>
+
+        </div>
+
+        <p>
+            Predict the expected hospitalization period for admitted patients.
+        </p>
+
+        <ul class="prediction-features">
+
+            <li>
+                <i class="fa-solid fa-check"></i>
+                Stay Estimation
+            </li>
+
+            <li>
+                <i class="fa-solid fa-check"></i>
+                Bed Allocation
+            </li>
+
+            <li>
+                <i class="fa-solid fa-check"></i>
+                Resource Planning
+            </li>
+
+        </ul>
+
+        <button
+            class="predict-btn"
+            id="openStayPrediction">
+
+            <i class="fa-solid fa-hospital"></i>
+
+            Open Prediction
+
+        </button>
+
+    </div>
+
+</section>
+<!-- ================= DISEASE PREDICTION MODAL ================= -->
+
+<div class="modal" id="diseaseModal">
+
+<div class="modal-content">
+
+<h2>Disease Prediction</h2>
+
+<input type="number" id="age" placeholder="Age">
+
+<select id="gender">
+
+<option value="">Select Gender</option>
+
+<option value="Male">Male</option>
+
+<option value="Female">Female</option>
+
+</select>
+
+<input type="number" id="temperature" placeholder="Temperature (°F)">
+
+<input type="number" id="bloodPressure" placeholder="Blood Pressure">
+
+<input type="number" id="bloodSugar" placeholder="Blood Sugar">
+
+<input type="number" id="heartRate" placeholder="Heart Rate">
+
+<input type="number" id="oxygen" placeholder="Oxygen Level">
+
+<div class="result-card">
+
+<h3>Predicted Disease</h3>
+
+<h1 id="diseaseResult">--</h1>
+
+</div>
+
+<div class="modal-buttons">
+
+<button id="predictDisease">
+
+Predict
+
+</button>
+
+<button id="closeDiseaseModal">
+
+Close
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+<!-- ================= MEDICINE DEMAND MODAL ================= -->
+
+<div class="modal" id="medicineModal">
+
+<div class="modal-content">
+
+<h2>Medicine Demand Prediction</h2>
+
+<input type="number" id="patients" placeholder="Patients">
+
+<input type="number" id="medicineRequired" placeholder="Medicine Required">
+
+<input type="number" id="averageAge" placeholder="Average Age">
+
+<input type="number" id="averageTemperature" placeholder="Average Temperature">
+
+<input type="number" id="averageBP" placeholder="Average Blood Pressure">
+
+<input type="number" id="averageSugar" placeholder="Average Sugar">
+
+<input type="number" id="averageHeartRate" placeholder="Average Heart Rate">
+
+<input type="number" id="averageOxygen" placeholder="Average Oxygen">
+
+<input type="number" id="currentStock" placeholder="Current Stock">
+
+<input type="number" id="yesterdayUsage" placeholder="Yesterday Usage">
+
+<input type="number" id="last7DaysAvg" placeholder="Last 7 Days Average">
+
+<input type="number" id="last30DaysAvg" placeholder="Last 30 Days Average">
+
+<div class="result-card">
+
+<h3>Predicted Medicine Demand</h3>
+
+<h1 id="medicineResult">--</h1>
+
+</div>
+
+<div class="modal-buttons">
+
+<button id="predictMedicine">
+
+Predict
+
+</button>
+
+<button id="closeMedicineModal">
+
+Close
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+<!-- ================= LENGTH OF STAY MODAL ================= -->
+
+<div class="modal" id="stayModal">
+
+<div class="modal-content">
+
+<h2>Length of Stay Prediction</h2>
+
+<input type="number" id="stayAge" placeholder="Age">
+
+<input type="number" id="stayTemperature" placeholder="Temperature">
+
+<input type="number" id="stayBP" placeholder="Blood Pressure">
+
+<input type="number" id="staySugar" placeholder="Blood Sugar">
+
+<input type="number" id="stayHeartRate" placeholder="Heart Rate">
+
+<input type="number" id="stayOxygen" placeholder="Oxygen Level">
+
+<div class="result-card">
+
+<h3>Estimated Stay</h3>
+
+<h1 id="stayResult">-- Days</h1>
+
+</div>
+
+<div class="modal-buttons">
+
+<button id="predictStay">
+
+Predict
+
+</button>
+
+<button id="closeStayModal">
+
+Close
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+<!-- ================= PREDICTION HISTORY ================= -->
+
+<section class="table-box">
+
+<h2 class="table-title">
+
+<i class="fa-solid fa-clock-rotate-left"></i>
+
+Prediction History
+
+</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+
+<th>Prediction Type</th>
+
+<th>Patient</th>
+
+<th>Prediction Result</th>
+
+<th>Date & Time</th>
+
+<th>Status</th>
+
+<th>Actions</th>
+
+</tr>
+
+</thead>
+
+<tbody id="predictionTable">
+
+<!-- JavaScript will load prediction history -->
+
+</tbody>
+
+</table>
+
+</section>
+
+<!-- ================= PAGINATION ================= -->
+
+<div class="pagination">
+
+<button id="prevPage">
+
+« Previous
+
+</button>
+
+<span id="pageNumber">
+
+1
+
+</span>
+
+<button id="nextPage">
+
+Next »
+
+</button>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="footer">
+
+<p>
+
+© 2026 Hospital Hospitality Management System | AI Prediction Module
+
+</p>
+
+</footer>
+
+</main>
+
+</div>
+
+<script src="../static/js/prediction.js"></script>
+
+</body>
+
+</html>

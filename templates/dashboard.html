@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hospital Hospitality Management System</title>
+
+    <link rel="stylesheet" href="../static/css/dashboard.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar">
+
+<div class="logo">
+
+<i class="fa-solid fa-hospital"></i>
+
+<h2>Hospital HMS</h2>
+
+</div>
+
+<ul>
+
+<li class="active">
+<a href="dashboard.html">
+<i class="fa-solid fa-house"></i>
+<span>Dashboard</span>
+</a>
+</li>
+
+<li>
+<a href="patients.html">
+<i class="fa-solid fa-user-injured"></i>
+<span>Patients</span>
+</a>
+</li>
+
+<li>
+<a href="doctors.html">
+<i class="fa-solid fa-user-doctor"></i>
+<span>Doctors</span>
+</a>
+</li>
+
+<li>
+<a href="nurses.html">
+<i class="fa-solid fa-user-nurse"></i>
+<span>Nurses</span>
+</a>
+</li>
+
+<li>
+<a href="beds.html">
+<i class="fa-solid fa-bed"></i>
+<span>Beds</span>
+</a>
+</li>
+
+<li>
+<a href="pharmacy.html">
+<i class="fa-solid fa-pills"></i>
+<span>Pharmacy</span>
+</a>
+</li>
+
+<li>
+<a href="prediction.html">
+<i class="fa-solid fa-brain"></i>
+<span>AI Prediction</span>
+</a>
+</li>
+
+<li>
+<a href="analytics.html">
+<i class="fa-solid fa-chart-line"></i>
+<span>Analytics</span>
+</a>
+</li>
+
+<li>
+<a href="reports.html">
+<i class="fa-solid fa-file-lines"></i>
+<span>Reports</span>
+</a>
+</li>
+
+<li>
+<a href="billing.html">
+<i class="fa-solid fa-credit-card"></i>
+<span>Billing</span>
+</a>
+</li>
+
+<li>
+<a href="profile.html">
+<i class="fa-solid fa-user"></i>
+<span>Profile</span>
+</a>
+</li>
+
+<li>
+<a href="settings.html">
+<i class="fa-solid fa-gear"></i>
+<span>Settings</span>
+</a>
+</li>
+
+<li>
+<a href="login.html">
+<i class="fa-solid fa-right-from-bracket"></i>
+<span>Logout</span>
+</a>
+</li>
+
+</ul>
+
+</aside>
+
+<!-- ================= MAIN ================= -->
+
+<main class="main">
+
+<header>
+
+<div>
+
+<h1>Hospital Hospitality Management System</h1>
+
+<p>Welcome Admin 👋</p>
+
+</div>
+
+<div class="header-right">
+
+<input type="text" placeholder="Search">
+
+<i class="fa-solid fa-bell"></i>
+
+<i class="fa-solid fa-envelope"></i>
+
+<img src="https://i.pravatar.cc/45" alt="Admin">
+
+</div>
+
+</header>
+<!-- ================= STATISTICS ================= -->
+
+<section class="cards">
+
+<div class="card">
+
+<i class="fa-solid fa-user-injured"></i>
+
+<h3>Patients</h3>
+
+<h2>1248</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-user-doctor"></i>
+
+<h3>Doctors</h3>
+
+<h2>84</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-user-nurse"></i>
+
+<h3>Nurses</h3>
+
+<h2>156</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-bed"></i>
+
+<h3>Available Beds</h3>
+
+<h2>67</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-hospital-user"></i>
+
+<h3>Admissions</h3>
+
+<h2>39</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-door-open"></i>
+
+<h3>Discharges</h3>
+
+<h2>18</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-capsules"></i>
+
+<h3>Medicine Stock</h3>
+
+<h2>587</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-indian-rupee-sign"></i>
+
+<h3>Revenue</h3>
+
+<h2>₹2.8M</h2>
+
+</div>
+
+</section>
+
+<!-- ================= QUICK ACTIONS ================= -->
+
+<section class="quick">
+
+<a href="patients.html" class="action">
+
+<i class="fa-solid fa-user-plus"></i>
+
+<h3>Add Patient</h3>
+
+</a>
+
+<a href="beds.html" class="action">
+
+<i class="fa-solid fa-bed"></i>
+
+<h3>Allocate Bed</h3>
+
+</a>
+
+<a href="doctors.html" class="action">
+
+<i class="fa-solid fa-user-doctor"></i>
+
+<h3>Assign Doctor</h3>
+
+</a>
+
+<a href="reports.html" class="action">
+
+<i class="fa-solid fa-file-medical"></i>
+
+<h3>Create Report</h3>
+
+</a>
+
+<a href="pharmacy.html" class="action">
+
+<i class="fa-solid fa-pills"></i>
+
+<h3>Pharmacy</h3>
+
+</a>
+
+<a href="billing.html" class="action">
+
+<i class="fa-solid fa-credit-card"></i>
+
+<h3>Billing</h3>
+
+</a>
+
+</section>
+
+<!-- ================= AI PREDICTION ================= -->
+
+<section class="prediction">
+
+<div class="prediction-card">
+
+<h2>Disease Prediction</h2>
+
+<p>Predict possible disease using ML model.</p>
+
+<a href="prediction.html">
+
+<button>Open</button>
+
+</a>
+
+</div>
+
+<div class="prediction-card">
+
+<h2>Medicine Demand</h2>
+
+<p>Forecast medicine requirements.</p>
+
+<a href="prediction.html">
+
+<button>Open</button>
+
+</a>
+
+</div>
+
+<div class="prediction-card">
+
+<h2>Length of Stay</h2>
+
+<p>Estimate hospitalization duration.</p>
+
+<a href="prediction.html">
+
+<button>Open</button>
+
+</a>
+
+</div>
+
+</section>
+<!-- ================= CHARTS ================= -->
+
+<section class="graphs">
+
+<div class="graph">
+
+<h2>Monthly Patients</h2>
+
+<canvas id="lineChart"></canvas>
+
+</div>
+
+<div class="graph">
+
+<h2>Disease Distribution</h2>
+
+<canvas id="pieChart"></canvas>
+
+</div>
+
+</section>
+
+<!-- ================= RECENT ADMISSIONS ================= -->
+
+<section class="table-box">
+
+<div class="table-header">
+
+<h2>Recent Admissions</h2>
+
+<a href="patients.html" class="view-all-btn">View All</a>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+
+<th>Name</th>
+
+<th>Doctor</th>
+
+<th>Ward</th>
+
+<th>Status</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>1001</td>
+
+<td>Rahul Sharma</td>
+
+<td>Dr. Mehta</td>
+
+<td>ICU</td>
+
+<td><span class="green">Admitted</span></td>
+
+<td>
+
+<a href="patients.html">
+
+<button class="table-btn">View</button>
+
+</a>
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>1002</td>
+
+<td>Anjali Gupta</td>
+
+<td>Dr. Singh</td>
+
+<td>General</td>
+
+<td><span class="blue">Recovering</span></td>
+
+<td>
+
+<a href="patients.html">
+
+<button class="table-btn">View</button>
+
+</a>
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>1003</td>
+
+<td>Ramesh Kumar</td>
+
+<td>Dr. Khan</td>
+
+<td>Private</td>
+
+<td><span class="red">Critical</span></td>
+
+<td>
+
+<a href="patients.html">
+
+<button class="table-btn">View</button>
+
+</a>
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>1004</td>
+
+<td>Pooja Patel</td>
+
+<td>Dr. Joseph</td>
+
+<td>ICU</td>
+
+<td><span class="green">Stable</span></td>
+
+<td>
+
+<a href="patients.html">
+
+<button class="table-btn">View</button>
+
+</a>
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>1005</td>
+
+<td>Vikram Reddy</td>
+
+<td>Dr. Kumar</td>
+
+<td>Ward 3</td>
+
+<td><span class="blue">Recovering</span></td>
+
+<td>
+
+<a href="patients.html">
+
+<button class="table-btn">View</button>
+
+</a>
+
+</td>
+
+</tr>
+
+<tr>
+
+<td>1006</td>
+
+<td>Priya Sharma</td>
+
+<td>Dr. Khan</td>
+
+<td>Ward 5</td>
+
+<td><span class="green">Admitted</span></td>
+
+<td>
+
+<a href="patients.html">
+
+<button class="table-btn">View</button>
+
+</a>
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</section>
+
+<!-- ================= NOTIFICATIONS ================= -->
+
+<section class="notifications">
+
+<div class="table-header">
+
+<h2>Notifications</h2>
+
+<a href="reports.html" class="view-all-btn">
+
+View All
+
+</a>
+
+</div>
+
+<div class="note">
+
+<i class="fa-solid fa-circle-exclamation"></i>
+
+Medicine Stock Running Low
+
+</div>
+
+<div class="note">
+
+<i class="fa-solid fa-bed"></i>
+
+ICU Beds Almost Full
+
+</div>
+
+<div class="note">
+
+<i class="fa-solid fa-user-doctor"></i>
+
+3 Doctors On Leave Today
+
+</div>
+
+<div class="note">
+
+<i class="fa-solid fa-triangle-exclamation"></i>
+
+Emergency Patient Arrived
+
+</div>
+
+<div class="note">
+
+<i class="fa-solid fa-heart-pulse"></i>
+
+Critical Patient Shifted To ICU
+
+</div>
+
+<div class="note">
+
+<i class="fa-solid fa-syringe"></i>
+
+Vaccination Drive Starts Tomorrow
+
+</div>
+
+</section>
+<!-- ================= HOSPITAL OVERVIEW ================= -->
+
+<section class="cards">
+
+<div class="card">
+
+<i class="fa-solid fa-stethoscope"></i>
+
+<h3>Departments</h3>
+
+<h2>12</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-ambulance"></i>
+
+<h3>Ambulances</h3>
+
+<h2>08</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-user-nurse"></i>
+
+<h3>Staff On Duty</h3>
+
+<h2>145</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-calendar-check"></i>
+
+<h3>Appointments</h3>
+
+<h2>78</h2>
+
+</div>
+
+</section>
+
+<!-- ================= UPCOMING APPOINTMENTS ================= -->
+
+<section class="table-box">
+
+<div class="table-header">
+
+<h2>Upcoming Appointments</h2>
+
+<a href="reports.html" class="view-all-btn">
+
+View All
+
+</a>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Time</th>
+
+<th>Patient</th>
+
+<th>Doctor</th>
+
+<th>Department</th>
+
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>09:00 AM</td>
+
+<td>Rahul Sharma</td>
+
+<td>Dr. Mehta</td>
+
+<td>Cardiology</td>
+
+<td><span class="green">Confirmed</span></td>
+
+</tr>
+
+<tr>
+
+<td>10:30 AM</td>
+
+<td>Anjali Gupta</td>
+
+<td>Dr. Singh</td>
+
+<td>Neurology</td>
+
+<td><span class="blue">Waiting</span></td>
+
+</tr>
+
+<tr>
+
+<td>11:15 AM</td>
+
+<td>Ramesh Kumar</td>
+
+<td>Dr. Khan</td>
+
+<td>Orthopedics</td>
+
+<td><span class="green">Confirmed</span></td>
+
+</tr>
+
+<tr>
+
+<td>12:00 PM</td>
+
+<td>Priya Patel</td>
+
+<td>Dr. Joseph</td>
+
+<td>General</td>
+
+<td><span class="red">Delayed</span></td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="footer">
+
+<p>
+
+© 2026 Hospital Hospitality Management System | All Rights Reserved
+
+</p>
+
+</footer>
+
+</main>
+
+</div>
+
+<script src="../static/js/dashboard.js"></script>
+
+</body>
+
+</html>

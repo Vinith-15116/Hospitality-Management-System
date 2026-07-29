@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Analytics Dashboard</title>
+
+<link rel="stylesheet" href="../static/css/dashboard.css">
+
+<link rel="stylesheet" href="../static/css/analytics.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<aside class="sidebar">
+
+<div class="logo">
+
+<i class="fa-solid fa-chart-line"></i>
+
+<h2>Analytics</h2>
+
+</div>
+
+<ul>
+
+<li>
+
+<a href="dashboard.html">
+
+<i class="fa-solid fa-house"></i>
+
+Dashboard
+
+</a>
+
+</li>
+
+<li class="active">
+
+<a href="analytics.html">
+
+<i class="fa-solid fa-chart-pie"></i>
+
+Analytics
+
+</a>
+
+</li>
+
+</ul>
+
+</aside>
+
+<main class="main">
+
+<header>
+
+<div>
+
+<h1>Hospital Analytics Dashboard</h1>
+
+<p>AI Driven Insights</p>
+
+</div>
+
+</header>
+<section class="cards">
+
+<div class="card">
+
+<i class="fa-solid fa-user-injured"></i>
+
+<h3>Patient Growth</h3>
+
+<h2 id="patientGrowth">0%</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-money-bill"></i>
+
+<h3>Total Revenue</h3>
+
+<h2 id="analyticsRevenue">₹0</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-bed"></i>
+
+<h3>Bed Occupancy</h3>
+
+<h2 id="occupancyRate">0%</h2>
+
+</div>
+
+<div class="card">
+
+<i class="fa-solid fa-pills"></i>
+
+<h3>Medicine Usage</h3>
+
+<h2 id="medicineUsage">0</h2>
+
+</div>
+
+</section>
+<section class="charts-grid">
+
+<div class="chart-card">
+
+<h3>Patient Admissions</h3>
+
+<canvas id="admissionChart"></canvas>
+
+</div>
+
+<div class="chart-card">
+
+<h3>Disease Distribution</h3>
+
+<canvas id="diseaseChart"></canvas>
+
+</div>
+
+<div class="chart-card">
+
+<h3>Revenue Analysis</h3>
+
+<canvas id="incomeChart"></canvas>
+
+</div>
+
+<div class="chart-card">
+
+<h3>Medicine Consumption</h3>
+
+<canvas id="medicineChart"></canvas>
+
+</div>
+
+</section>
+<section class="table-box">
+
+<h2>AI Insights</h2>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Prediction</th>
+
+<th>Result</th>
+
+</tr>
+
+</thead>
+
+<tbody id="aiInsights">
+
+<tr>
+
+<td>Most Common Disease</td>
+
+<td>Loading...</td>
+
+</tr>
+
+<tr>
+
+<td>Expected Patient Increase</td>
+
+<td>Loading...</td>
+
+</tr>
+
+<tr>
+
+<td>Medicine Demand</td>
+
+<td>Loading...</td>
+
+</tr>
+
+<tr>
+
+<td>Hospital Performance</td>
+
+<td>Loading...</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</section>
+
+<footer class="footer">
+
+<p>
+
+© 2026 Hospital HMS Analytics
+
+</p>
+
+</footer>
+
+</main>
+
+</div>
+
+<script src="../static/js/analytics.js"></script>
+
+</body>
+
+</html>
