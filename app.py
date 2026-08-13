@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, render_template, session, redirect, request
 
 from routes.database_routes import database_bp
@@ -158,6 +160,10 @@ print(app.url_map)
 
 if __name__ == "__main__":
 
+    port = int(os.environ.get("PORT", 5000))
+
     app.run(
-        debug=True
+        host="0.0.0.0",
+        port=port,
+        debug=False
     )
