@@ -3,28 +3,15 @@
 // Analytics Dashboard
 // ======================================================
 
-// ---------- Local Storage ----------
 
-const PATIENT_KEY = "hospital_patients";
-const DOCTOR_KEY = "hospital_doctors";
-const NURSE_KEY = "hospital_nurses";
-const BED_KEY = "hospital_beds";
-const PHARMACY_KEY = "hospital_pharmacy";
-
-// ---------- Data ----------
-
-let patients = [];
-let doctors = [];
-let nurses = [];
-let beds = [];
-let medicines = [];
-
-// ---------- Charts ----------
+// ======================================================
+// CHART VARIABLES
+// ======================================================
 
 let admissionChart;
 let diseaseChart;
-let incomeChart;
 let medicineChart;
+
 
 // ======================================================
 // INITIALIZE
@@ -32,614 +19,757 @@ let medicineChart;
 
 document.addEventListener("DOMContentLoaded", init);
 
-function init(){
 
-    loadData();
+function init() {
 
-    renderCards();
-
-    renderCharts();
-
-    renderAIInsights();
+    loadAnalyticsData();
 
 }
+
+
 // ======================================================
-// LOAD DATA
+// LOAD ANALYTICS DATA
 // ======================================================
 
-function loadData(){
+function loadAnalyticsData() {
 
-    patients = JSON.parse(
+    fetch("/api/dashboard-data")
 
-        localStorage.getItem(PATIENT_KEY)
+        .then(response => response.json())
 
-    ) || [];
+        .then(data => {
 
-    doctors = JSON.parse(
+            if (!data.success) {
 
-        localStorage.getItem(DOCTOR_KEY)
+                console.error(
+                    "Analytics API Error:",
+                    data.error
+                );
 
-    ) || [];
+                return;
+            }
 
-    nurses = JSON.parse(
 
-        localStorage.getItem(NURSE_KEY)
+            // ==========================================
+            // KPI CARDS
+            // ==========================================
 
-    ) || [];
+            updateCards(data);
 
-    beds = JSON.parse(
 
-        localStorage.getItem(BED_KEY)
+            // ==========================================
+            // CHARTS
+            // ==========================================
 
-    ) || [];
+            renderAdmissionChart(
+                data.monthly_patients
+            );
 
-    medicines = JSON.parse(
+            renderDiseaseChart(
+                data.disease_distribution
+            );
 
-        localStorage.getItem(PHARMACY_KEY)
+            renderMedicineChart(
+                data
+            );
 
-    ) || [];
+
+            // ==========================================
+            // AI INSIGHTS
+            // ==========================================
+
+            renderAIInsights(data);
+
+
+            console.log(
+                "Analytics data loaded:",
+                data
+            );
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Analytics connection error:",
+                error
+            );
+
+        });
 
 }
+
+
 // ======================================================
 // KPI CARDS
 // ======================================================
 
-function renderCards(){
+function updateCards(data) {
 
-    // Patient Growth
+    // ==========================================
+    // PATIENT GROWTH
+    // ==========================================
 
-    document.getElementById("patientGrowth").innerText =
+    const monthly =
+        data.monthly_patients || [];
 
-        patients.length + "%";
+    let growthText = "N/A";
 
-    // Revenue
 
-    let revenue = 0;
+    if (monthly.length >= 2) {
 
-    beds.forEach(bed=>{
+        const previousItem =
+            monthly[monthly.length - 2];
 
-        revenue += Number(bed.charge || 0);
+        const currentItem =
+            monthly[monthly.length - 1];
 
-    });
 
-    medicines.forEach(medicine=>{
+        const previousDate =
+            new Date(
+                previousItem.month + "-01"
+            );
 
-        revenue += Number(medicine.price || 0);
+        const currentDate =
+            new Date(
+                currentItem.month + "-01"
+            );
 
-    });
 
-    document.getElementById("analyticsRevenue").innerText =
+        // Check whether the two records are
+        // consecutive months
 
-        "₹" + revenue.toLocaleString();
+        const monthDifference =
+            (
+                currentDate.getFullYear() -
+                previousDate.getFullYear()
+            ) * 12
+            +
+            (
+                currentDate.getMonth() -
+                previousDate.getMonth()
+            );
 
-    // Bed Occupancy
 
-    const occupied = beds.filter(
+        const previous =
+            Number(previousItem.total);
 
-        bed=>bed.status==="Occupied"
+        const current =
+            Number(currentItem.total);
 
-    ).length;
 
-    const occupancy =
+        if (
+            monthDifference === 1 &&
+            previous > 0
+        ) {
 
-        beds.length===0
+            const growth =
+                Math.round(
+                    (
+                        (current - previous)
+                        / previous
+                    ) * 100
+                );
 
-        ? 0
+            growthText =
+                growth + "%";
 
-        : Math.round(
+        }
 
-            occupied / beds.length * 100
+    }
 
-        );
 
-    document.getElementById("occupancyRate").innerText =
+    document.getElementById(
+        "patientGrowth"
+    ).innerText = growthText;
 
+
+    // ==========================================
+    // BED OCCUPANCY
+    // ==========================================
+
+    const totalBeds =
+        Number(data.beds || 0);
+
+    const occupiedBeds =
+        Number(data.occupied_beds || 0);
+
+
+    let occupancy = 0;
+
+
+    if (totalBeds > 0) {
+
+        occupancy =
+            Math.round(
+                (occupiedBeds / totalBeds) * 100
+            );
+
+    }
+
+
+    document.getElementById(
+        "occupancyRate"
+    ).innerText =
         occupancy + "%";
 
-    // Medicine Usage
 
-    let totalMedicine = 0;
+    // ==========================================
+    // MEDICINE USAGE
+    // ==========================================
 
-    medicines.forEach(medicine=>{
-
-        totalMedicine += Number(
-
-            medicine.quantity || 0
-
-        );
-
-    });
-
-    document.getElementById("medicineUsage").innerText =
-
-        totalMedicine;
+    document.getElementById(
+        "medicineUsage"
+    ).innerText =
+        Number(
+            data.medicine_stock || 0
+        ).toLocaleString();
 
 }
-// ======================================================
-// RENDER ALL CHARTS
-// ======================================================
 
-function renderCharts(){
 
-    renderAdmissionChart();
-
-    renderDiseaseChart();
-
-    renderIncomeChart();
-
-    renderMedicineChart();
-
-}
 // ======================================================
 // PATIENT ADMISSION CHART
 // ======================================================
 
-function renderAdmissionChart(){
+function renderAdmissionChart(monthlyPatients) {
 
-    admissionChart = new Chart(
 
-        document.getElementById("admissionChart"),
+    const canvas =
+        document.getElementById(
+            "admissionChart"
+        );
 
-        {
 
-            type:"line",
+    if (!canvas) {
+        return;
+    }
 
-            data:{
 
-                labels:[
+    if (admissionChart) {
 
-                    "Jan","Feb","Mar",
+        admissionChart.destroy();
 
-                    "Apr","May","Jun",
+    }
 
-                    "Jul","Aug","Sep",
 
-                    "Oct","Nov","Dec"
+    monthlyPatients =
+        monthlyPatients || [];
 
-                ],
 
-                datasets:[{
+    const labels =
+        monthlyPatients.map(item => {
 
-                    label:"Patient Admissions",
+            const parts =
+                item.month.split("-");
 
-                    data:[
 
-                        15,22,28,35,
+            const year =
+                Number(parts[0]);
 
-                        42,50,55,60,
 
-                        65,70,78,85
+            const month =
+                Number(parts[1]);
+
+
+            const date =
+                new Date(
+                    year,
+                    month - 1
+                );
+
+
+            return date.toLocaleString(
+                "en-US",
+                {
+                    month: "short",
+                    year: "numeric"
+                }
+            );
+
+        });
+
+
+    const values =
+        monthlyPatients.map(
+            item => Number(item.total)
+        );
+
+
+    admissionChart =
+        new Chart(
+            canvas,
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels: labels,
+
+                    datasets: [{
+
+                        label:
+                            "Patient Admissions",
+
+                        data: values,
+
+                        borderWidth: 3,
+
+                        tension: 0.4,
+
+                        fill: false
+
+                    }]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            ticks: {
+
+                                precision: 0
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+}
+
+
+// ======================================================
+// DISEASE DISTRIBUTION
+// ======================================================
+
+function renderDiseaseChart(
+    diseaseData
+) {
+
+
+    const canvas =
+        document.getElementById(
+            "diseaseChart"
+        );
+
+
+    if (!canvas) {
+        return;
+    }
+
+
+    if (diseaseChart) {
+
+        diseaseChart.destroy();
+
+    }
+
+
+    diseaseData =
+        diseaseData || [];
+
+
+    const labels =
+        diseaseData.map(
+            item => item.Disease
+        );
+
+
+    const values =
+        diseaseData.map(
+            item => Number(item.total)
+        );
+
+
+    diseaseChart =
+        new Chart(
+            canvas,
+            {
+
+                type: "pie",
+
+                data: {
+
+                    labels: labels,
+
+                    datasets: [{
+
+                        data: values,
+
+                        borderWidth: 1
+
+                    }]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    plugins: {
+
+                        legend: {
+
+                            position: "bottom"
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+}
+
+
+// ======================================================
+// MEDICINE CONSUMPTION
+// ======================================================
+
+function renderMedicineChart(data) {
+
+
+    const canvas =
+        document.getElementById(
+            "medicineChart"
+        );
+
+
+    if (!canvas) {
+        return;
+    }
+
+
+    if (medicineChart) {
+
+        medicineChart.destroy();
+
+    }
+
+
+    const totalMedicines =
+        Number(
+            data.total_medicines || 0
+        );
+
+
+    const lowStock =
+        Number(
+            data.low_stock || 0
+        );
+
+
+    const expired =
+        Number(
+            data.expired_medicines || 0
+        );
+
+
+    const inStock =
+        Math.max(
+            totalMedicines -
+            lowStock -
+            expired,
+            0
+        );
+
+
+    medicineChart =
+        new Chart(
+            canvas,
+            {
+
+                type: "doughnut",
+
+                data: {
+
+                    labels: [
+
+                        "In Stock",
+
+                        "Low Stock",
+
+                        "Expired"
 
                     ],
 
-                    borderWidth:3,
+                    datasets: [{
 
-                    tension:.4,
+                        data: [
 
-                    fill:false
+                            inStock,
 
-                }]
+                            lowStock,
 
-            },
+                            expired
 
-            options:{
+                        ],
 
-                responsive:true,
+                        borderWidth: 1
 
-                maintainAspectRatio:false
+                    }]
 
-            }
+                },
 
-        }
+                options: {
 
-    );
+                    responsive: true,
 
-}
-// ======================================================
-// DISEASE DISTRIBUTION CHART
-// ======================================================
+                    maintainAspectRatio: false,
 
-function renderDiseaseChart(){
+                    plugins: {
 
-    const diseases = {};
+                        legend: {
 
-    patients.forEach(patient=>{
+                            position: "bottom"
 
-        const disease = patient.disease || "Unknown";
+                        }
 
-        diseases[disease] =
+                    }
 
-        (diseases[disease] || 0) + 1;
-
-    });
-
-    diseaseChart = new Chart(
-
-        document.getElementById("diseaseChart"),
-
-        {
-
-            type:"pie",
-
-            data:{
-
-                labels:Object.keys(diseases),
-
-                datasets:[{
-
-                    data:Object.values(diseases)
-
-                }]
-
-            },
-
-            options:{
-
-                responsive:true,
-
-                maintainAspectRatio:false
+                }
 
             }
-
-        }
-
-    );
-
-}
-// ======================================================
-// REVENUE ANALYSIS CHART
-// ======================================================
-
-function renderIncomeChart(){
-
-    let bedRevenue = 0;
-
-    let medicineRevenue = 0;
-
-    beds.forEach(bed=>{
-
-        bedRevenue += Number(
-
-            bed.charge || 0
-
         );
 
-    });
-
-    medicines.forEach(medicine=>{
-
-        medicineRevenue += Number(
-
-            medicine.price || 0
-
-        );
-
-    });
-
-    incomeChart = new Chart(
-
-        document.getElementById("incomeChart"),
-
-        {
-
-            type:"bar",
-
-            data:{
-
-                labels:[
-
-                    "Beds",
-
-                    "Medicines"
-
-                ],
-
-                datasets:[{
-
-                    label:"Revenue",
-
-                    data:[
-
-                        bedRevenue,
-
-                        medicineRevenue
-
-                    ],
-
-                    borderWidth:1
-
-                }]
-
-            },
-
-            options:{
-
-                responsive:true,
-
-                maintainAspectRatio:false
-
-            }
-
-        }
-
-    );
-
 }
-// ======================================================
-// MEDICINE CONSUMPTION CHART
-// ======================================================
 
-function renderMedicineChart(){
 
-    const categories = {};
-
-    medicines.forEach(medicine=>{
-
-        const category =
-
-        medicine.category || "Other";
-
-        categories[category] =
-
-        (categories[category] || 0)
-
-        +
-
-        Number(medicine.quantity || 0);
-
-    });
-
-    medicineChart = new Chart(
-
-        document.getElementById("medicineChart"),
-
-        {
-
-            type:"doughnut",
-
-            data:{
-
-                labels:Object.keys(categories),
-
-                datasets:[{
-
-                    data:Object.values(categories)
-
-                }]
-
-            },
-
-            options:{
-
-                responsive:true,
-
-                maintainAspectRatio:false
-
-            }
-
-        }
-
-    );
-
-}
 // ======================================================
 // AI INSIGHTS
 // ======================================================
 
-function renderAIInsights(){
+function renderAIInsights(data) {
 
-    const table = document.getElementById("aiInsights");
 
-    // Most Common Disease
+    const table =
+        document.getElementById(
+            "aiInsights"
+        );
 
-    const diseaseCount = {};
 
-    patients.forEach(patient=>{
+    if (!table) {
+        return;
+    }
 
-        const disease = patient.disease || "Unknown";
 
-        diseaseCount[disease] =
+    const diseases =
+        data.disease_distribution || [];
 
-        (diseaseCount[disease] || 0) + 1;
 
-    });
+    // ==========================================
+    // MOST COMMON DISEASE
+    // ==========================================
 
     let commonDisease = "N/A";
 
-    let max = 0;
 
-    for(const disease in diseaseCount){
+    if (diseases.length > 0) {
 
-        if(diseaseCount[disease] > max){
-
-            max = diseaseCount[disease];
-
-            commonDisease = disease;
-
-        }
+        commonDisease =
+            diseases[0].Disease;
 
     }
 
-    // Expected Growth
 
-    const expectedGrowth =
+    // ==========================================
+    // EXPECTED PATIENT GROWTH
+    // ==========================================
 
-    Math.round(
+    const monthly =
+        data.monthly_patients || [];
 
-        patients.length * 1.15
 
-    );
+    let expectedPatients = 0;
 
-    // Medicine Demand
 
-    const lowStock = medicines.filter(
+    if (monthly.length > 0) {
 
-        medicine=>medicine.status==="Low Stock"
+        const latest =
+            Number(
+                monthly[monthly.length - 1].total
+            );
 
-    ).length;
 
-    // Performance Score
-
-    const occupiedBeds = beds.filter(
-
-        bed=>bed.status==="Occupied"
-
-    ).length;
-
-    const occupancyRate =
-
-    beds.length===0
-
-    ? 0
-
-    : Math.round(
-
-        occupiedBeds/beds.length*100
-
-    );
-
-    let performance = "Excellent";
-
-    if(occupancyRate>90){
-
-        performance="Busy";
+        expectedPatients =
+            Math.round(
+                latest * 1.15
+            );
 
     }
 
-    if(lowStock>10){
 
-        performance="Attention Needed";
+    // ==========================================
+    // LOW STOCK
+    // ==========================================
+
+    const lowStock =
+        Number(
+            data.low_stock || 0
+        );
+
+
+    // ==========================================
+    // HOSPITAL PERFORMANCE
+    // ==========================================
+
+    const totalBeds =
+        Number(data.beds || 0);
+
+
+    const occupiedBeds =
+        Number(data.occupied_beds || 0);
+
+
+    let occupancyRate = 0;
+
+
+    if (totalBeds > 0) {
+
+        occupancyRate =
+            Math.round(
+                (occupiedBeds / totalBeds) * 100
+            );
 
     }
+
+
+    let performance =
+        "Excellent";
+
+
+    if (occupancyRate > 90) {
+
+        performance = "Busy";
+
+    }
+    else if (occupancyRate > 75) {
+
+        performance = "Good";
+
+    }
+
+
+    if (lowStock > 10) {
+
+        performance =
+            "Attention Needed";
+
+    }
+
+
+    // ==========================================
+    // DISPLAY
+    // ==========================================
 
     table.innerHTML = `
 
-    <tr>
+        <tr>
 
-        <td>Most Common Disease</td>
+            <td>
+                Most Common Disease
+            </td>
 
-        <td>${commonDisease}</td>
+            <td>
+                ${commonDisease}
+            </td>
 
-    </tr>
+        </tr>
 
-    <tr>
 
-        <td>Expected Patient Count (Next Month)</td>
+        <tr>
 
-        <td>${expectedGrowth}</td>
+            <td>
+                Expected Patient Count (Next Month)
+            </td>
 
-    </tr>
+            <td>
+                ${expectedPatients}
+            </td>
 
-    <tr>
+        </tr>
 
-        <td>Low Stock Medicines</td>
 
-        <td>${lowStock}</td>
+        <tr>
 
-    </tr>
+            <td>
+                Low Stock Medicines
+            </td>
 
-    <tr>
+            <td>
+                ${lowStock}
+            </td>
 
-        <td>Hospital Performance</td>
+        </tr>
 
-        <td>${performance}</td>
 
-    </tr>
+        <tr>
+
+            <td>
+                Hospital Performance
+            </td>
+
+            <td>
+                ${performance}
+            </td>
+
+        </tr>
 
     `;
 
 }
-// ======================================================
-// ALERTS
-// ======================================================
 
-function showAlerts(){
 
-    const expired = medicines.filter(
-
-        medicine=>medicine.status==="Expired"
-
-    ).length;
-
-    const availableBeds = beds.filter(
-
-        bed=>bed.status==="Available"
-
-    ).length;
-
-    if(expired>0){
-
-        console.warn(
-
-            expired +
-
-            " expired medicines found."
-
-        );
-
-    }
-
-    if(availableBeds<5){
-
-        console.warn(
-
-            "Low bed availability."
-
-        );
-
-    }
-
-}
 // ======================================================
 // AUTO REFRESH
 // ======================================================
 
-function refreshAnalytics(){
+setInterval(
+    loadAnalyticsData,
+    30000
+);
 
-    if(admissionChart) admissionChart.destroy();
 
-    if(diseaseChart) diseaseChart.destroy();
-
-    if(incomeChart) incomeChart.destroy();
-
-    if(medicineChart) medicineChart.destroy();
-
-    loadData();
-
-    renderCards();
-
-    renderCharts();
-
-    renderAIInsights();
-
-}
-
-setInterval(refreshAnalytics,30000);
-// ======================================================
-// INITIALIZE
-// ======================================================
-
-function init(){
-
-    loadData();
-
-    renderCards();
-
-    renderCharts();
-
-    renderAIInsights();
-
-    showAlerts();
-
-}
 // ======================================================
 // MODULE READY
 // ======================================================
 
-console.log("====================================");
+console.log(
+    "===================================="
+);
 
-console.log("Hospital HMS");
+console.log(
+    "Hospital HMS"
+);
 
-console.log("Analytics Dashboard Loaded");
+console.log(
+    "Analytics Dashboard Loaded"
+);
 
-console.log("====================================");
+console.log(
+    "Database Connected Analytics"
+);
+
+console.log(
+    "===================================="
+);

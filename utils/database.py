@@ -1,11 +1,7 @@
 # database.py
-import mysql.connector
+import sqlite3
 
-db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="Vinith15116",
-    database="hospital_hms"
-)
+db = sqlite3.connect("hospital.db", check_same_thread=False)
+db.row_factory = sqlite3.Row
 
-cursor = db.cursor(dictionary=True)
+cursor = db.cursor()

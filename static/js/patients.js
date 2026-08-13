@@ -1,13 +1,16 @@
 // ======================================================
-// Hospital Hospitality Management System
-// Patients Module
+// HOSPITAL HOSPITALITY MANAGEMENT SYSTEM
+// PATIENTS MODULE
 // ======================================================
 
-// ---------- Local Storage Key ----------
 
-const STORAGE_KEY = "hospital_patients";
+// ======================================================
+// STORAGE
+// ======================================================
 
-// ---------- Global Variables ----------
+// ======================================================
+// GLOBAL VARIABLES
+// ======================================================
 
 let patients = [];
 
@@ -21,272 +24,369 @@ let editIndex = -1;
 
 let deleteIndex = -1;
 
-// ---------- HTML Elements ----------
 
-const patientTable = document.getElementById("patientTable");
+// ======================================================
+// HTML ELEMENTS
+// ======================================================
 
-const searchBox = document.getElementById("searchPatient");
+const patientTable =
+    document.getElementById("patientTable");
 
-const statusFilter = document.getElementById("statusFilter");
+const searchBox =
+    document.getElementById("searchPatient");
 
-const genderFilter = document.getElementById("genderFilter");
+const modal =
+    document.getElementById("patientModal");
 
-const modal = document.getElementById("patientModal");
+const viewModal =
+    document.getElementById("viewModal");
 
-const viewModal = document.getElementById("viewModal");
+const deleteModal =
+    document.getElementById("deleteModal");
 
-const deleteModal = document.getElementById("deleteModal");
+const totalPatients =
+    document.getElementById("totalPatients");
 
-const totalPatients = document.getElementById("totalPatients");
+const uploadInput =
+    document.getElementById("csvUploadInput");
 
-const criticalPatients = document.getElementById("criticalPatients");
+const uploadStatus =
+    document.getElementById("uploadStatus");
 
-const recoveringPatients = document.getElementById("recoveringPatients");
 
-const dischargedPatients = document.getElementById("dischargedPatients");
+// ======================================================
+// INITIALIZATION
+// ======================================================
 
-// ---------- Initialization ----------
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
 
-document.addEventListener("DOMContentLoaded", init);
+        console.log(
+            "Patients Module Loaded Successfully"
+        );
 
-function init() {
 
-    loadPatients();
+        registerEvents();
 
-    registerEvents();
 
-    applyFilters();
+        await loadPatients();
 
-}
 
-// ---------- Load Patients ----------
+    }
+);
 
-function loadPatients() {
 
-    console.log("loadPatients() called");
+// ======================================================
+// LOAD PATIENTS FROM FLASK + MYSQL
+// ======================================================
 
-    const data = localStorage.getItem(STORAGE_KEY);
+async function loadPatients() {
 
-    if (data) {
-        try {
-            patients = JSON.parse(data) || [];
-        } catch (e) {
-            console.error("Failed to parse patients from storage:", e);
-            patients = [];
+    try {
+
+        const response = await fetch(
+            "/patients/data",
+            { cache: "no-store" }
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
         }
-    } else {
-        patients = [
-            {
-                name: "Rahul Sharma",
-                age: 32,
-                gender: "Male",
-                disease: "Heart Disease",
-                doctor: "Dr. Mehta",
-                status: "Admitted"
-            },
-            {
-                name: "Anjali Gupta",
-                age: 28,
-                gender: "Female",
-                disease: "Fever",
-                doctor: "Dr. Singh",
-                status: "Recovering"
-            },
-            {
-                name: "Ramesh Kumar",
-                age: 54,
-                gender: "Male",
-                disease: "Stroke",
-                doctor: "Dr. Khan",
-                status: "Critical"
-            }
-        ];
-        savePatients();
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(
+                data.error || "Failed to load patients"
+            );
+        }
+
+        patients = data.patients || [];
+
+        console.log(
+            "Patients loaded from MySQL:",
+            patients.length
+        );
+
+        applyFilters();
+
+    } catch (error) {
+
+        console.error(
+            "MySQL patient load error:",
+            error
+        );
+
+        patients = [];
+        applyFilters();
+
+        showMessage(
+            "Could not load patients from database.",
+            "#dc2626"
+        );
+
     }
 
 }
 
-// ---------- Save Patients ----------
 
-function savePatients(){
-
-    localStorage.setItem(
-
-        STORAGE_KEY,
-
-        JSON.stringify(patients)
-
-    );
-
-}
 // ======================================================
-// Register Events
+// DATABASE STORAGE IS HANDLED BY FLASK + MYSQL
+// ======================================================
+
+
+// ======================================================
+// REGISTER EVENTS
 // ======================================================
 
 function registerEvents() {
 
-    document.getElementById("openModal")
-        .addEventListener("click", openAddModal);
 
-    document.getElementById("closeModal")
-        .addEventListener("click", closeModal);
+    // ADD PATIENT
 
-    document.getElementById("savePatient")
-        .addEventListener("click", savePatient);
+    const openButton =
+        document.getElementById("openModal");
 
-    document.getElementById("closeViewModal")
-        .addEventListener("click", () => {
+    if (openButton) {
 
-            viewModal.style.display = "none";
+        openButton.addEventListener(
+            "click",
+            openAddModal
+        );
 
-        });
+    }
 
-    document.getElementById("cancelDelete")
-        .addEventListener("click", () => {
 
-            deleteModal.style.display = "none";
+    // CLOSE ADD/EDIT MODAL
 
-        });
+    const closeButton =
+        document.getElementById("closeModal");
 
-    document.getElementById("confirmDelete")
-        .addEventListener("click", confirmDelete);
+    if (closeButton) {
 
-    searchBox.addEventListener("keyup", applyFilters);
+        closeButton.addEventListener(
+            "click",
+            closeModal
+        );
 
-    statusFilter.addEventListener("change", applyFilters);
+    }
 
-    genderFilter.addEventListener("change", applyFilters);
 
-    document.getElementById("prevPage")
-        .addEventListener("click", previousPage);
+    // SAVE PATIENT
 
-    document.getElementById("nextPage")
-        .addEventListener("click", nextPage);
+    const saveButton =
+        document.getElementById("savePatient");
+
+    if (saveButton) {
+
+        saveButton.addEventListener(
+            "click",
+            savePatient
+        );
+
+    }
+
+
+    // CLOSE VIEW MODAL
+
+    const closeView =
+        document.getElementById("closeViewModal");
+
+    if (closeView) {
+
+        closeView.addEventListener(
+            "click",
+            function () {
+
+                viewModal.style.display = "none";
+
+            }
+        );
+
+    }
+
+
+    // CANCEL DELETE
+
+    const cancelDelete =
+        document.getElementById("cancelDelete");
+
+    if (cancelDelete) {
+
+        cancelDelete.addEventListener(
+            "click",
+            function () {
+
+                deleteModal.style.display = "none";
+
+            }
+        );
+
+    }
+
+
+    // CONFIRM DELETE
+
+    const confirmDeleteButton =
+        document.getElementById("confirmDelete");
+
+    if (confirmDeleteButton) {
+
+        confirmDeleteButton.addEventListener(
+            "click",
+            confirmDelete
+        );
+
+    }
+
+
+    // SEARCH
+
+    if (searchBox) {
+
+        searchBox.addEventListener(
+            "input",
+            applyFilters
+        );
+
+    }
+
+
+    // CSV UPLOAD
+
+    if (uploadInput) {
+
+        uploadInput.addEventListener(
+            "change",
+            handleCSVUpload
+        );
+
+    }
+
+
+    // PAGINATION
+
+    const previousButton =
+        document.getElementById("prevPage");
+
+    if (previousButton) {
+
+        previousButton.addEventListener(
+            "click",
+            previousPage
+        );
+
+    }
+
+
+    const nextButton =
+        document.getElementById("nextPage");
+
+    if (nextButton) {
+
+        nextButton.addEventListener(
+            "click",
+            nextPage
+        );
+
+    }
 
 }
 
+
 // ======================================================
-// Apply Search & Filters
+// SEARCH
 // ======================================================
 
 function applyFilters() {
 
-    const keyword = searchBox.value.toLowerCase();
+    const keyword =
+        searchBox
+            ? searchBox.value.toLowerCase().trim()
+            : "";
 
-    const status = statusFilter.value;
 
-    const gender = genderFilter.value;
+    filteredPatients = patients.filter(
+        function (patient) {
 
-    filteredPatients = patients.filter(patient => {
+            const searchableText =
+                Object.values(patient)
+                    .join(" ")
+                    .toLowerCase();
 
-        const searchMatch =
+            return searchableText.includes(keyword);
 
-            patient.name.toLowerCase().includes(keyword) ||
+        }
+    );
 
-            patient.disease.toLowerCase().includes(keyword) ||
-
-            patient.doctor.toLowerCase().includes(keyword);
-
-        const statusMatch =
-
-            status === "All" ||
-
-            patient.status === status;
-
-        const genderMatch =
-
-            gender === "All" ||
-
-            patient.gender === gender;
-
-        return searchMatch && statusMatch && genderMatch;
-
-    });
 
     currentPage = 1;
 
     render();
 
 }
+
+
 // ======================================================
-// Render Everything
+// RENDER
 // ======================================================
 
 function render() {
 
-    console.log("1");
     renderTable();
 
-    console.log("2");
     renderDashboard();
 
-    console.log("3");
     renderPagination();
 
-    console.log("4");
+}
+
+
+// ======================================================
+// DASHBOARD
+// ======================================================
+
+function renderDashboard() {
+
+    if (totalPatients) {
+
+        totalPatients.innerText =
+            patients.length;
+
+    }
 
 }
 
+
 // ======================================================
-// Dashboard
-// ======================================================
-
-function renderDashboard(){
-
-    totalPatients.innerText = patients.length;
-
-    criticalPatients.innerText =
-
-        patients.filter(p =>
-
-            p.status === "Critical"
-
-        ).length;
-
-    recoveringPatients.innerText =
-
-        patients.filter(p =>
-
-            p.status === "Recovering"
-
-        ).length;
-
-    dischargedPatients.innerText =
-
-        patients.filter(p =>
-
-            p.status === "Discharged"
-
-        ).length;
-
-}
-// ======================================================
-// Render Table
+// TABLE
 // ======================================================
 
-function renderTable(){
+function renderTable() {
 
     patientTable.innerHTML = "";
 
-    const start = (currentPage - 1) * rowsPerPage;
 
-    const end = start + rowsPerPage;
-
-    const pagePatients = filteredPatients.slice(start, end);
-
-    if(pagePatients.length === 0){
+    if (patients.length === 0) {
 
         patientTable.innerHTML = `
 
-        <tr>
+            <tr>
 
-            <td colspan="8" style="text-align:center;padding:30px;">
+                <td
+                    colspan="20"
+                    style="
+                        text-align:center;
+                        padding:40px;
+                    "
+                >
 
-                No Patients Found
+                    No Patients Found
 
-            </td>
+                </td>
 
-        </tr>
+            </tr>
 
         `;
 
@@ -294,311 +394,1247 @@ function renderTable(){
 
     }
 
-    pagePatients.forEach(patient=>{
 
-        const index = patients.indexOf(patient);
+    // --------------------------------------------------
+    // GET ALL COLUMNS
+    // --------------------------------------------------
 
-        const row = document.createElement("tr");
+    const columns = getColumns();
 
-        row.innerHTML = `
 
-        <td>${index+1}</td>
+    // --------------------------------------------------
+    // CREATE TABLE HEADER
+    // --------------------------------------------------
 
-        <td>${patient.name}</td>
+    const thead =
+        document.querySelector(".table-box thead");
 
-        <td>${patient.age}</td>
+    thead.innerHTML = "";
 
-        <td>${patient.gender}</td>
 
-        <td>${patient.disease}</td>
+    const headerRow =
+        document.createElement("tr");
 
-        <td>${patient.doctor}</td>
 
-        <td>
+    columns.forEach(function (column) {
 
-            ${getStatusBadge(patient.status)}
+        const th =
+            document.createElement("th");
 
-        </td>
+        th.innerText =
+            formatColumnName(column);
 
-        <td>
+        headerRow.appendChild(th);
+
+    });
+
+
+    const actionHeader =
+        document.createElement("th");
+
+    actionHeader.innerText = "Actions";
+
+    headerRow.appendChild(actionHeader);
+
+    thead.appendChild(headerRow);
+
+
+    // --------------------------------------------------
+    // PAGINATION
+    // --------------------------------------------------
+
+    const start =
+        (currentPage - 1) * rowsPerPage;
+
+    const end =
+        start + rowsPerPage;
+
+    const pagePatients =
+        filteredPatients.slice(start, end);
+
+
+    // --------------------------------------------------
+    // CREATE ROWS
+    // --------------------------------------------------
+
+    pagePatients.forEach(function (patient) {
+
+        const actualIndex =
+            patients.indexOf(patient);
+
+
+        const row =
+            document.createElement("tr");
+
+
+        columns.forEach(function (column) {
+
+            const td =
+                document.createElement("td");
+
+
+            let value =
+                patient[column];
+
+
+            if (
+                column.toLowerCase() === "status" ||
+                column.toLowerCase() === "patientstatus"
+            ) {
+
+                td.innerHTML =
+                    getStatusBadge(value);
+
+            }
+
+            else {
+
+                td.innerText =
+                    value ?? "";
+
+            }
+
+
+            row.appendChild(td);
+
+        });
+
+
+        // ACTIONS
+
+        const actionCell =
+            document.createElement("td");
+
+
+        actionCell.innerHTML = `
 
             <button
+                class="view-btn"
+                onclick="viewPatient(${actualIndex})"
+                title="View"
+            >
 
-            class="view-btn"
-
-            onclick="viewPatient(${index})">
-
-            <i class="fa-solid fa-eye"></i>
+                <i class="fa-solid fa-eye"></i>
 
             </button>
 
+
             <button
+                class="edit-btn"
+                onclick="editPatient(${actualIndex})"
+                title="Edit"
+            >
 
-            class="edit-btn"
-
-            onclick="editPatient(${index})">
-
-            <i class="fa-solid fa-pen"></i>
+                <i class="fa-solid fa-pen"></i>
 
             </button>
 
+
             <button
+                class="delete-btn"
+                onclick="deletePatient(${actualIndex})"
+                title="Delete"
+            >
 
-            class="delete-btn"
-
-            onclick="deletePatient(${index})">
-
-            <i class="fa-solid fa-trash"></i>
+                <i class="fa-solid fa-trash"></i>
 
             </button>
-
-        </td>
 
         `;
+
+
+        row.appendChild(actionCell);
 
         patientTable.appendChild(row);
 
     });
 
 }
+
+
 // ======================================================
-// Status Badge
+// GET TABLE COLUMNS
+// ======================================================
+// ======================================================
+// GET TABLE COLUMNS
 // ======================================================
 
-function getStatusBadge(status){
+function getColumns() {
 
-    switch(status){
+    if (!patients || patients.length === 0) {
+        return [];
+    }
 
-        case "Admitted":
+    return Object.keys(patients[0]);
 
-            return `<span class="admitted">
+}
 
-            Admitted
 
-            </span>`;
+// ======================================================
+// FORMAT COLUMN NAME
+// ======================================================
 
-        case "Recovering":
+function formatColumnName(column) {
 
-            return `<span class="recovering">
+    return column
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, function (text) {
+            return text.toUpperCase();
+        });
 
-            Recovering
+}
 
-            </span>`;
 
-        case "Critical":
+// ======================================================
+// STATUS BADGE
+// ======================================================
 
-            return `<span class="critical">
+function getStatusBadge(status) {
 
-            Critical
+    if (!status) {
+        return "";
+    }
 
-            </span>`;
 
-        case "Discharged":
+    const normalized =
+        String(status)
+            .toLowerCase()
+            .trim();
 
-            return `<span class="discharged">
 
-            Discharged
+    let className = "admitted";
 
-            </span>`;
 
-        default:
+    if (
+        normalized === "under treatment" ||
+        normalized === "recovering"
+    ) {
 
-            return status;
+        className = "recovering";
+
+    }
+
+    else if (
+        normalized === "critical"
+    ) {
+
+        className = "critical";
+
+    }
+
+    else if (
+        normalized === "recovered" ||
+        normalized === "discharged"
+    ) {
+
+        className = "discharged";
+
+    }
+
+
+    return `
+
+        <span class="${className}">
+
+            ${status}
+
+        </span>
+
+    `;
+
+}
+
+
+// ======================================================
+// OPEN ADD PATIENT MODAL
+// ======================================================
+
+function openAddModal() {
+
+    editIndex = -1;
+
+
+    const modalTitle =
+        document.getElementById("modalTitle");
+
+
+    if (modalTitle) {
+
+        modalTitle.innerText =
+            "Add Patient";
+
+    }
+
+
+    clearForm();
+
+
+    modal.style.display =
+        "flex";
+
+}
+
+
+// ======================================================
+// CLEAR FORM
+// ======================================================
+
+function clearForm() {
+
+    const fields = [
+
+        "patientName",
+        "patientAge",
+        "patientGender",
+        "patientBloodGroup",
+        "patientPhone",
+        "patientEmail",
+        "patientAddress",
+        "patientDisease",
+        "patientDoctor",
+        "patientWard",
+        "patientBed",
+        "patientInsurance",
+        "patientEmergency",
+        "patientAdmissionDate",
+        "patientStatus"
+
+    ];
+
+
+    fields.forEach(function (id) {
+
+        const element =
+            document.getElementById(id);
+
+
+        if (element) {
+
+            element.value = "";
+
+        }
+
+    });
+
+
+    const status =
+        document.getElementById(
+            "patientStatus"
+        );
+
+
+    if (status) {
+
+        status.value =
+            "Admitted";
+
+    }
+
+
+    const insurance =
+        document.getElementById(
+            "patientInsurance"
+        );
+
+
+    if (insurance) {
+
+        insurance.value =
+            "No";
+
+    }
+
+
+    const editField =
+        document.getElementById(
+            "editIndex"
+        );
+
+
+    if (editField) {
+
+        editField.value = "";
 
     }
 
 }
+
+
 // ======================================================
-// Open Add Patient Modal
+// CLOSE MODAL
 // ======================================================
 
-function openAddModal(){
+function closeModal() {
+
+    if (modal) {
+
+        modal.style.display =
+            "none";
+
+    }
+
 
     editIndex = -1;
 
-    document.getElementById("modalTitle").innerText = "Add Patient";
+}
 
-    clearForm();
 
-    modal.style.display = "flex";
+// ======================================================
+// GET INPUT VALUE
+// ======================================================
+
+function getValue(id) {
+
+    const element =
+        document.getElementById(id);
+
+
+    if (!element) {
+
+        return "";
+
+    }
+
+
+    return element.value.trim();
 
 }
 
-// ======================================================
-// Close Modal
-// ======================================================
-
-function closeModal(){
-
-    modal.style.display = "none";
-
-}
 
 // ======================================================
-// Clear Form
+// SAVE PATIENT
+// ADD OR EDIT
 // ======================================================
 
-function clearForm(){
-
-    document.getElementById("patientName").value = "";
-
-    document.getElementById("patientAge").value = "";
-
-    document.getElementById("patientGender").value = "";
-
-    document.getElementById("patientDisease").value = "";
-
-    document.getElementById("patientDoctor").value = "";
-
-    document.getElementById("patientStatus").value = "Admitted";
-
-}
-// ======================================================
-// Save Patient
-// ======================================================
-
-function savePatient(){
+async function savePatient() {
 
     const patient = {
 
-    id: editIndex === -1
-        ? Date.now()
-        : patients[editIndex].id,
+    PatientID:
+        getValue("patientID"),
 
-    name: document.getElementById("patientName").value.trim(),
+    PatientName:
+        getValue("patientName"),
 
-    age: document.getElementById("patientAge").value,
+    Age:
+        getValue("patientAge"),
 
-    gender: document.getElementById("patientGender").value,
+    Gender:
+        getValue("patientGender"),
 
-    bloodGroup: document.getElementById("patientBloodGroup").value,
+    Disease:
+        getValue("patientDisease"),
 
-    phone: document.getElementById("patientPhone").value.trim(),
+    Allergies:
+        getValue("patientAllergies"),
 
-    email: document.getElementById("patientEmail").value.trim(),
+    PreviousDiseases:
+        getValue("patientPreviousDiseases"),
 
-    address: document.getElementById("patientAddress").value.trim(),
+    LabTestResults:
+        getValue("patientLabTestResults"),
 
-    disease: document.getElementById("patientDisease").value.trim(),
+    AdmissionDate:
+        getValue("patientAdmissionDate"),
 
-    doctor: document.getElementById("patientDoctor").value.trim(),
+    RoomNumber:
+        getValue("patientRoomNumber"),
 
-    ward: document.getElementById("patientWard").value,
+    BedID:
+        getValue("patientBedID"),
 
-    bed: document.getElementById("patientBed").value,
+    BedType:
+        getValue("patientBedType"),
 
-    insurance: document.getElementById("patientInsurance").value,
+    NurseID:
+        getValue("patientNurseID"),
 
-    emergency: document.getElementById("patientEmergency").value.trim(),
+    DoctorAssigned:
+        getValue("patientDoctor"),
 
-    admissionDate: document.getElementById("patientAdmissionDate").value,
+    MedicineRequired:
+        getValue("patientMedicineRequired"),
 
-    status: document.getElementById("patientStatus").value
+    MedicineTime:
+        getValue("patientMedicineTime"),
+
+    PatientStatus:
+        getValue("patientStatus"),
+
+    EmergencyContact:
+        getValue("patientEmergency"),
+
+    DischargeDate:
+        getValue("patientDischargeDate"),
+
+    Temperature:
+        getValue("patientTemperature"),
+
+    BloodPressure:
+        getValue("patientBloodPressure"),
+
+    SugarLevel:
+        getValue("patientSugarLevel"),
+
+    HeartRate:
+        getValue("patientHeartRate"),
+
+    OxygenLevel:
+        getValue("patientOxygenLevel"),
+
+    WBCCount:
+        getValue("patientWBCCount"),
+
+    PlateletCount:
+        getValue("patientPlateletCount"),
+
+    Hemoglobin:
+        getValue("patientHemoglobin"),
+
+    FeverSymptom:
+        getValue("patientFeverSymptom"),
+
+    Cough:
+        getValue("patientCough"),
+
+    Vomiting:
+        getValue("patientVomiting"),
+
+    ChestPain:
+        getValue("patientChestPain"),
+
+    Headache:
+        getValue("patientHeadache"),
+
+    ShortnessOfBreath:
+        getValue("patientShortnessOfBreath"),
+
+    SeverityLevel:
+        getValue("patientSeverityLevel"),
+
+    MedicineQuantityUsed:
+        getValue("patientMedicineQuantityUsed"),
+
+    CurrentMedicineStock:
+        getValue("patientCurrentMedicineStock"),
+
+    Season:
+        getValue("patientSeason")
 
 };
 
-    // Validation
+    // ==================================================
+    // VALIDATION
+    // ==================================================
 
-    if(
+    if (
+        patient.PatientName === "" ||
+        patient.Age === "" ||
+        patient.Gender === "" ||
+        patient.Disease === "" ||
+        patient.DoctorAssigned === ""
+    ) {
 
-        patient.name==="" ||
-
-        patient.age==="" ||
-
-        patient.gender==="" ||
-
-        patient.disease==="" ||
-
-        patient.doctor===""
-
-    ){
-
-        alert("Please fill all fields.");
+        alert(
+            "Please fill Name, Age, Gender, Disease and Doctor."
+        );
 
         return;
 
     }
 
-    // Add
 
-    if(editIndex===-1){
+    try {
 
-        patients.push(patient);
+        let response;
+
+
+        // ==================================================
+        // EDIT EXISTING PATIENT
+        // ==================================================
+
+        if (editIndex !== -1) {
+
+            const existingPatient =
+                patients[editIndex];
+
+
+            if (!existingPatient) {
+
+                throw new Error(
+                    "Patient not found."
+                );
+
+            }
+
+
+            response = await fetch(
+
+                `/patients/${existingPatient.id}`,
+
+                {
+
+                    method: "PUT",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json"
+
+                    },
+
+                    body:
+                        JSON.stringify(patient)
+
+                }
+
+            );
+
+        }
+
+
+        // ==================================================
+        // ADD NEW PATIENT
+        // ==================================================
+
+        else {
+
+            patient.PatientID =
+                generatePatientID();
+
+
+            response = await fetch(
+
+                "/patients",
+
+                {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json"
+
+                    },
+
+                    body:
+                        JSON.stringify(patient)
+
+                }
+
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.error ||
+                "Patient operation failed."
+            );
+
+        }
+
+
+        // ==================================================
+        // SUCCESS MESSAGE
+        // ==================================================
+
+        if (editIndex === -1) {
+
+            showMessage(
+                "Patient added successfully!"
+            );
+
+        }
+
+        else {
+
+            showMessage(
+                "Patient updated successfully!"
+            );
+
+        }
+
+
+        // Close modal
+
+        closeModal();
+
+
+        // Reload directly from MySQL
+
+        await loadPatients();
 
     }
 
-    // Update
 
-    else{
+    catch (error) {
 
-        patients[editIndex]=patient;
+        console.error(
+            "Save patient error:",
+            error
+        );
+
+
+        showMessage(
+
+            "Could not save patient: " +
+            error.message,
+
+            "#dc2626"
+
+        );
 
     }
 
-    savePatients();
-
-    applyFilters();
-
-    closeModal();
-
 }
+
+
 // ======================================================
-// Edit Patient
+// GENERATE PATIENT ID
 // ======================================================
 
-function editPatient(index){
+function generatePatientID() {
 
-    editIndex = index;
+    return "P" +
 
-    const patient = patients[index];
+        Math.floor(
 
-    document.getElementById("modalTitle").innerText = "Edit Patient";
+            10000 +
+            Math.random() * 90000
 
-    document.getElementById("patientName").value = patient.name;
-
-    document.getElementById("patientAge").value = patient.age;
-
-    document.getElementById("patientGender").value = patient.gender;
-
-    document.getElementById("patientBloodGroup").value = patient.bloodGroup || "";
-
-    document.getElementById("patientPhone").value = patient.phone || "";
-
-    document.getElementById("patientEmail").value = patient.email || "";
-
-    document.getElementById("patientAddress").value = patient.address || "";
-
-    document.getElementById("patientDisease").value = patient.disease;
-
-    document.getElementById("patientDoctor").value = patient.doctor;
-
-    document.getElementById("patientWard").value = patient.ward || "";
-
-    document.getElementById("patientBed").value = patient.bed || "";
-
-    document.getElementById("patientInsurance").value = patient.insurance || "No";
-
-    document.getElementById("patientEmergency").value = patient.emergency || "";
-
-    document.getElementById("patientAdmissionDate").value = patient.admissionDate || "";
-
-    document.getElementById("patientStatus").value = patient.status;
-
-    modal.style.display = "flex";
+        );
 
 }
+
+
+// ======================================================
+// EDIT PATIENT
+// ======================================================
+
+function editPatient(index) {
+
+    const patient =
+        patients[index];
+
+
+    if (!patient) {
+
+        return;
+
+    }
+
+
+    editIndex =
+        index;
+
+
+    const modalTitle =
+        document.getElementById(
+            "modalTitle"
+        );
+
+
+    if (modalTitle) {
+
+        modalTitle.innerText =
+            "Edit Patient";
+
+    }
+
+
+    // --------------------------------------------------
+    // BASIC DETAILS
+    // --------------------------------------------------
+
+    setValue(
+        "patientName",
+        patient.PatientName
+    );
+
+
+    setValue(
+        "patientAge",
+        patient.Age
+    );
+
+
+    setValue(
+        "patientGender",
+        patient.Gender
+    );
+
+
+    setValue(
+        "patientBloodGroup",
+        patient.BloodGroup
+    );
+
+
+    // --------------------------------------------------
+    // CONTACT DETAILS
+    // --------------------------------------------------
+
+    setValue(
+        "patientPhone",
+        patient.Phone
+    );
+
+
+    setValue(
+        "patientEmail",
+        patient.Email
+    );
+
+
+    setValue(
+        "patientAddress",
+        patient.Address
+    );
+
+
+    // --------------------------------------------------
+    // MEDICAL DETAILS
+    // --------------------------------------------------
+
+    setValue(
+        "patientDisease",
+        patient.Disease
+    );
+
+
+    setValue(
+        "patientDoctor",
+        patient.DoctorAssigned
+    );
+
+
+    // --------------------------------------------------
+    // WARD / BED
+    // --------------------------------------------------
+
+    setValue(
+        "patientWard",
+        patient.Ward
+    );
+
+
+    setValue(
+        "patientBed",
+        patient.BedID ||
+        patient.BedNumber
+    );
+
+
+    // --------------------------------------------------
+    // INSURANCE
+    // --------------------------------------------------
+
+    setValue(
+        "patientInsurance",
+        patient.Insurance
+    );
+
+
+    // --------------------------------------------------
+    // EMERGENCY CONTACT
+    // --------------------------------------------------
+
+    setValue(
+        "patientEmergency",
+        patient.EmergencyContact
+    );
+
+
+    // --------------------------------------------------
+    // ADMISSION DATE
+    // --------------------------------------------------
+
+    setValue(
+        "patientAdmissionDate",
+        patient.AdmissionDate
+    );
+
+
+    // --------------------------------------------------
+    // STATUS
+    // --------------------------------------------------
+
+    setValue(
+        "patientStatus",
+        patient.PatientStatus
+    );
+
+
+    // --------------------------------------------------
+    // HIDDEN INDEX
+    // --------------------------------------------------
+
+    const editField =
+        document.getElementById(
+            "editIndex"
+        );
+
+
+    if (editField) {
+
+        editField.value =
+            index;
+
+    }
+
+
+    // --------------------------------------------------
+    // OPEN MODAL
+    // --------------------------------------------------
+
+    modal.style.display =
+        "flex";
+
+}
+
+
+// ======================================================
+// SET INPUT VALUE
+// ======================================================
+
+function setValue(id, value) {
+
+    const element =
+        document.getElementById(id);
+
+
+    if (!element) {
+
+        return;
+
+    }
+
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+
+        element.value = "";
+
+    }
+
+    else {
+
+        element.value = value;
+
+    }
+
+}
+
+
+// ======================================================
+// VIEW PATIENT
+// ======================================================
+
+function viewPatient(index) {
+
+    const patient =
+        patients[index];
+
+
+    if (!patient) {
+
+        return;
+
+    }
+
+
+    const container =
+        document.getElementById(
+            "viewPatientData"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    Object.keys(patient).forEach(
+        function (key) {
+
+            const value =
+                patient[key];
+
+
+            const row =
+                document.createElement("div");
+
+
+            row.style.display =
+                "flex";
+
+            row.style.justifyContent =
+                "space-between";
+
+            row.style.gap =
+                "20px";
+
+            row.style.padding =
+                "10px 0";
+
+            row.style.borderBottom =
+                "1px solid #e5e7eb";
+
+
+            const label =
+                document.createElement("strong");
+
+
+            label.innerText =
+                formatColumnName(key);
+
+
+            const valueElement =
+                document.createElement("span");
+
+
+            valueElement.innerText =
+                value ?? "";
+
+
+            row.appendChild(label);
+
+            row.appendChild(
+                valueElement
+            );
+
+
+            container.appendChild(row);
+
+        }
+    );
+
+
+    viewModal.style.display =
+        "flex";
+
+}
+
+
+// ======================================================
+// DELETE PATIENT
+// ======================================================
+
+function deletePatient(index) {
+
+    if (!patients[index]) {
+
+        return;
+
+    }
+
+
+    deleteIndex =
+        index;
+
+
+    const hiddenField =
+        document.getElementById(
+            "deleteIndex"
+        );
+
+
+    if (hiddenField) {
+
+        hiddenField.value =
+            index;
+
+    }
+
+
+    deleteModal.style.display =
+        "flex";
+
+}
+
+
+// ======================================================
+// CONFIRM DELETE
+// ======================================================
+
+async function confirmDelete() {
+
+    if (deleteIndex === -1) {
+
+        return;
+
+    }
+
+
+    const patient =
+        patients[deleteIndex];
+
+
+    if (!patient) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+
+                `/patients/${patient.id}`,
+
+                {
+
+                    method: "DELETE"
+
+                }
+
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.error ||
+                "Delete failed"
+            );
+
+        }
+
+
+        deleteIndex = -1;
+
+
+        if (deleteModal) {
+
+            deleteModal.style.display =
+                "none";
+
+        }
+
+
+        showMessage(
+            "Patient deleted successfully!",
+            "#dc2626"
+        );
+
+
+        await loadPatients();
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "Delete error:",
+            error
+        );
+
+
+        showMessage(
+            "Could not delete patient.",
+            "#dc2626"
+        );
+
+    }
+
+}
+
+
+// ======================================================
+// PAGINATION
+// ======================================================
 // ======================================================
 // PAGINATION
 // ======================================================
 
 function renderPagination() {
 
-    const totalPages = Math.max(1, Math.ceil(filteredPatients.length / rowsPerPage));
+    const pageNumber =
+        document.getElementById("pageNumber");
 
-    document.getElementById("pageNumber").innerText =
-        currentPage + " / " + totalPages;
+    if (pageNumber) {
+
+        const totalPages =
+            Math.max(
+                1,
+                Math.ceil(
+                    filteredPatients.length /
+                    rowsPerPage
+                )
+            );
+
+        pageNumber.innerText =
+            `${currentPage} / ${totalPages}`;
+
+    }
+
+
+    const previousButton =
+        document.getElementById("prevPage");
+
+    const nextButton =
+        document.getElementById("nextPage");
+
+
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                filteredPatients.length /
+                rowsPerPage
+            )
+        );
+
+
+    if (previousButton) {
+
+        previousButton.disabled =
+            currentPage <= 1;
+
+    }
+
+
+    if (nextButton) {
+
+        nextButton.disabled =
+            currentPage >= totalPages;
+
+    }
 
 }
+
+
+// ======================================================
+// PREVIOUS PAGE
+// ======================================================
 
 function previousPage() {
 
@@ -612,9 +1648,19 @@ function previousPage() {
 
 }
 
+
+// ======================================================
+// NEXT PAGE
+// ======================================================
+
 function nextPage() {
 
-    const totalPages = Math.max(1, Math.ceil(filteredPatients.length / rowsPerPage));
+    const totalPages =
+        Math.ceil(
+            filteredPatients.length /
+            rowsPerPage
+        );
+
 
     if (currentPage < totalPages) {
 
@@ -625,359 +1671,954 @@ function nextPage() {
     }
 
 }
-// ======================================================
-// DELETE
-// ======================================================
 
-function confirmDelete() {
-
-    if (deleteIndex == -1) return;
-
-    patients.splice(deleteIndex, 1);
-
-    deleteIndex = -1;
-
-    savePatients();
-
-    applyFilters();
-
-    deleteModal.style.display = "none";
-
-}
-// ======================================================
-// VIEW PATIENT
-// ======================================================
-
-function viewPatient(index){
-
-    const patient = patients[index];
-
-    document.getElementById("viewPatientData").innerHTML = `
-
-        <p><strong>Name:</strong> ${patient.name}</p>
-
-        <p><strong>Age:</strong> ${patient.age}</p>
-
-        <p><strong>Gender:</strong> ${patient.gender}</p>
-
-        <p><strong>Blood Group:</strong> ${patient.bloodGroup || "-"}</p>
-
-        <p><strong>Phone:</strong> ${patient.phone || "-"}</p>
-
-        <p><strong>Email:</strong> ${patient.email || "-"}</p>
-
-        <p><strong>Address:</strong> ${patient.address || "-"}</p>
-
-        <p><strong>Disease:</strong> ${patient.disease}</p>
-
-        <p><strong>Doctor:</strong> ${patient.doctor}</p>
-
-        <p><strong>Ward:</strong> ${patient.ward || "-"}</p>
-
-        <p><strong>Bed:</strong> ${patient.bed || "-"}</p>
-
-        <p><strong>Insurance:</strong> ${patient.insurance || "-"}</p>
-
-        <p><strong>Emergency Contact:</strong> ${patient.emergency || "-"}</p>
-
-        <p><strong>Admission Date:</strong> ${patient.admissionDate || "-"}</p>
-
-        <p><strong>Status:</strong> ${patient.status}</p>
-
-    `;
-
-    viewModal.style.display = "flex";
-
-}
 
 // ======================================================
-// DELETE PATIENT
+// CSV UPLOAD
 // ======================================================
 
-function deletePatient(index){
+async function handleCSVUpload(event) {
 
-    deleteIndex = index;
+    const file =
+        event.target.files[0];
 
-    deleteModal.style.display = "flex";
 
-}
+    if (!file) {
 
-function confirmDelete(){
+        return;
 
-    if(deleteIndex === -1) return;
+    }
 
-    patients.splice(deleteIndex,1);
 
-    deleteIndex = -1;
-
-    savePatients();
-
-    applyFilters();
-
-    deleteModal.style.display = "none";
-
-}
-
-// ======================================================
-// EXPORT CSV
-// ======================================================
-
-function exportPatientsCSV(){
-
-    let csv = "Name,Age,Gender,Disease,Doctor,Status\n";
-
-    patients.forEach(patient=>{
-
-        csv +=
-
-`${patient.name},${patient.age},${patient.gender},${patient.disease},${patient.doctor},${patient.status}\n`;
-
-    });
-
-    const blob = new Blob([csv],{
-
-        type:"text/csv"
-
-    });
-
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-
-    link.href = url;
-
-    link.download = "patients.csv";
-
-    document.body.appendChild(link);
-
-    link.click();
-
-    document.body.removeChild(link);
-
-    URL.revokeObjectURL(url);
-
-}
-
-// ======================================================
-// PAGINATION
-// ======================================================
-
-function renderPagination(){
-
-    const totalPages = Math.max(
-
-        1,
-
-        Math.ceil(filteredPatients.length / rowsPerPage)
-
+    console.log(
+        "CSV file selected:",
+        file.name
     );
 
-    document.getElementById("pageNumber").innerText =
 
-    currentPage + " / " + totalPages;
-
-}
-
-function previousPage(){
-
-    if(currentPage > 1){
-
-        currentPage--;
-
-        render();
-
-    }
-
-}
-
-function nextPage(){
-
-    const totalPages = Math.max(
-
-        1,
-
-        Math.ceil(filteredPatients.length / rowsPerPage)
-
+    console.log(
+        "CSV file type:",
+        file.type
     );
 
-    if(currentPage < totalPages){
 
-        currentPage++;
+    console.log(
+        "CSV file size:",
+        file.size
+    );
 
-        render();
+
+    // --------------------------------------------------
+    // CHECK FILE TYPE
+    // --------------------------------------------------
+
+    if (
+        !file.name
+            .toLowerCase()
+            .endsWith(".csv")
+    ) {
+
+        showMessage(
+            "Please select a valid CSV file.",
+            "#dc2626"
+        );
+
+
+        event.target.value = "";
+
+        return;
+
+    }
+
+
+    try {
+
+        // ------------------------------------------------
+        // UPLOAD MESSAGE
+        // ------------------------------------------------
+
+        if (uploadStatus) {
+
+            uploadStatus.innerText =
+                "Uploading CSV to MySQL...";
+
+            uploadStatus.style.color =
+                "#2563eb";
+
+        }
+
+
+        // ------------------------------------------------
+        // CREATE FORM DATA
+        // ------------------------------------------------
+
+        const formData =
+            new FormData();
+
+
+        formData.append(
+            "file",
+            file
+        );
+
+
+        // ------------------------------------------------
+        // SEND FILE TO FLASK
+        // ------------------------------------------------
+
+        const response =
+            await fetch(
+                "/patients/upload-csv",
+                {
+
+                    method: "POST",
+
+                    body: formData
+
+                }
+            );
+
+
+        // ------------------------------------------------
+        // READ RESPONSE
+        // ------------------------------------------------
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "CSV server response:",
+            data
+        );
+
+
+        // ------------------------------------------------
+        // CHECK RESPONSE
+        // ------------------------------------------------
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.error ||
+                "CSV upload failed."
+            );
+
+        }
+
+
+        // ------------------------------------------------
+        // SUCCESS
+        // ------------------------------------------------
+
+        const importedCount =
+            data.count || 0;
+
+
+        if (uploadStatus) {
+
+            uploadStatus.innerText =
+                importedCount +
+                " patient(s) imported successfully.";
+
+            uploadStatus.style.color =
+                "#16a34a";
+
+        }
+
+
+        showMessage(
+            importedCount +
+            " patient(s) imported successfully!"
+        );
+
+
+        // ------------------------------------------------
+        // RELOAD PATIENTS FROM MYSQL
+        // ------------------------------------------------
+
+        await loadPatients();
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "CSV upload error:",
+            error
+        );
+
+
+        if (uploadStatus) {
+
+            uploadStatus.innerText =
+                "CSV upload failed: " +
+                error.message;
+
+            uploadStatus.style.color =
+                "#dc2626";
+
+        }
+
+
+        showMessage(
+            error.message ||
+            "Could not upload CSV file.",
+            "#dc2626"
+        );
+
+    }
+
+
+    // --------------------------------------------------
+    // RESET FILE INPUT
+    // --------------------------------------------------
+
+    event.target.value = "";
+
+}
+
+
+// ======================================================
+// REFRESH PATIENT STATISTICS
+// ======================================================
+
+async function refreshPatientStatistics() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/patients/stats",
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP error: ${response.status}`
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.success) {
+
+            throw new Error(
+                data.error ||
+                "Statistics loading failed."
+            );
+
+        }
+
+
+        console.log(
+            "Patient statistics:",
+            data
+        );
+
+
+        const statistics =
+            data.patients;
+
+
+        if (totalPatients) {
+
+            totalPatients.innerText =
+                statistics.total;
+
+        }
+
+
+        // ------------------------------------------------
+        // OPTIONAL STATUS CARDS
+        // ------------------------------------------------
+
+        updateStatusCard(
+            "Admitted",
+            statistics.admitted
+        );
+
+
+        updateStatusCard(
+            "Under Treatment",
+            statistics.under_treatment
+        );
+
+
+        updateStatusCard(
+            "Recovered",
+            statistics.recovered
+        );
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Statistics error:",
+            error
+        );
 
     }
 
 }
 
+
 // ======================================================
-// CLOSE MODALS
+// UPDATE STATUS CARD
 // ======================================================
 
-window.addEventListener("click",function(e){
+function updateStatusCard(
+    status,
+    value
+) {
 
-    if(e.target===modal){
+    const cards =
+        document.querySelectorAll(
+            "#statusCards .card"
+        );
 
-        closeModal();
+
+    cards.forEach(
+        function (card) {
+
+            const heading =
+                card.querySelector("h3");
+
+
+            if (!heading) {
+
+                return;
+
+            }
+
+
+            if (
+                heading.innerText
+                    .trim()
+                    .toLowerCase() ===
+                status
+                    .toLowerCase()
+            ) {
+
+                const number =
+                    card.querySelector("h2");
+
+
+                if (number) {
+
+                    number.innerText =
+                        Number(value)
+                            .toLocaleString();
+
+                }
+
+            }
+
+        }
+    );
+
+}
+
+
+// ======================================================
+// REFRESH EVERYTHING
+// ======================================================
+
+async function refreshPatients() {
+
+    await loadPatients();
+
+    await refreshPatientStatistics();
+
+}
+
+
+// ======================================================
+// AUTO REFRESH DATABASE DATA
+// ======================================================
+
+// Refresh every 10 seconds
+
+setInterval(
+    refreshPatients,
+    10000
+);
+
+
+// ======================================================
+// CLOSE MODALS WHEN CLICKING OUTSIDE
+// ======================================================
+
+window.addEventListener(
+    "click",
+    function (event) {
+
+        if (
+            event.target === modal
+        ) {
+
+            closeModal();
+
+        }
+
+
+        if (
+            event.target === viewModal
+        ) {
+
+            viewModal.style.display =
+                "none";
+
+        }
+
+
+        if (
+            event.target === deleteModal
+        ) {
+
+            deleteModal.style.display =
+                "none";
+
+        }
 
     }
+);
 
-    if(e.target===viewModal){
-
-        viewModal.style.display="none";
-
-    }
-
-    if(e.target===deleteModal){
-
-        deleteModal.style.display="none";
-
-    }
-
-});
 
 // ======================================================
 // ESC KEY
 // ======================================================
 
-document.addEventListener("keydown",function(e){
+document.addEventListener(
+    "keydown",
+    function (event) {
 
-    if(e.key==="Escape"){
+        if (event.key !== "Escape") {
 
-        closeModal();
+            return;
 
-        viewModal.style.display="none";
+        }
 
-        deleteModal.style.display="none";
+
+        if (
+            modal &&
+            modal.style.display === "flex"
+        ) {
+
+            closeModal();
+
+        }
+
+
+        if (
+            viewModal &&
+            viewModal.style.display === "flex"
+        ) {
+
+            viewModal.style.display =
+                "none";
+
+        }
+
+
+        if (
+            deleteModal &&
+            deleteModal.style.display === "flex"
+        ) {
+
+            deleteModal.style.display =
+                "none";
+
+        }
+
+    }
+);
+// ======================================================
+// SHOW MESSAGE
+// ======================================================
+
+function showMessage(
+    message,
+    background = "#16a34a"
+) {
+
+    const existing =
+        document.querySelector(
+            ".patient-message"
+        );
+
+
+    if (existing) {
+
+        existing.remove();
+
+    }
+
+
+    const messageBox =
+        document.createElement("div");
+
+
+    messageBox.className =
+        "patient-message";
+
+
+    messageBox.innerText =
+        message;
+
+
+    messageBox.style.position =
+        "fixed";
+
+    messageBox.style.top =
+        "20px";
+
+    messageBox.style.right =
+        "20px";
+
+    messageBox.style.zIndex =
+        "9999";
+
+    messageBox.style.background =
+        background;
+
+    messageBox.style.color =
+        "white";
+
+    messageBox.style.padding =
+        "14px 22px";
+
+    messageBox.style.borderRadius =
+        "10px";
+
+    messageBox.style.fontWeight =
+        "600";
+
+    messageBox.style.boxShadow =
+        "0 10px 25px rgba(0,0,0,.15)";
+
+
+    document.body.appendChild(
+        messageBox
+    );
+
+
+    setTimeout(
+        function () {
+
+            messageBox.remove();
+
+        },
+        3000
+    );
+
+}
+
+
+// ======================================================
+// INITIAL STATISTICS LOAD
+// ======================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        refreshPatientStatistics();
+
+    }
+);
+
+// =========================================================
+// PATIENT FORM - WARD / BED / NURSE / DOCTOR / MEDICINE
+// =========================================================
+
+async function loadWards() {
+
+    const wardSelect = document.getElementById("patientWard");
+
+    if (!wardSelect) {
+        console.error("patientWard not found");
+        return;
+    }
+
+    wardSelect.innerHTML =
+        `<option value="">Select Ward</option>`;
+
+    try {
+
+        const response = await fetch("/patients/wards");
+        const data = await response.json();
+
+        console.log("WARD DATA:", data);
+
+        if (!data.success) {
+            throw new Error(data.error || "Ward loading failed");
+        }
+
+        data.wards.forEach(ward => {
+
+            const option = document.createElement("option");
+
+            option.value = ward;
+            option.textContent = ward;
+
+            wardSelect.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error("WARD ERROR:", error);
+
+    }
+}
+
+
+// =========================================================
+// LOAD BEDS
+// =========================================================
+
+async function loadBedsByWard(ward) {
+
+    const bedSelect =
+        document.getElementById("patientBedID");
+
+    const roomInput =
+        document.getElementById("patientRoomNumber");
+
+    if (!bedSelect) {
+        console.error("patientBedID not found");
+        return;
+    }
+
+    bedSelect.innerHTML =
+        `<option value="">Select Bed</option>`;
+
+    if (roomInput) {
+        roomInput.value = "";
+    }
+
+    if (!ward) return;
+
+    try {
+
+        const response =
+            await fetch(
+                `/patients/beds/${encodeURIComponent(ward)}`
+            );
+
+        const data = await response.json();
+
+        console.log("BED DATA:", data);
+
+        if (!data.success) {
+            throw new Error(data.error || "Bed loading failed");
+        }
+
+        data.beds.forEach(bed => {
+
+            const option =
+                document.createElement("option");
+
+            option.value = bed["Bed ID"];
+
+            option.textContent =
+                `${bed["Bed ID"]} | Room ${bed.Room} | Bed ${bed["Bed No."]}`;
+
+            option.dataset.room = bed.Room;
+
+            bedSelect.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error("BED ERROR:", error);
+
+    }
+}
+
+
+// =========================================================
+// LOAD NURSES
+// =========================================================
+
+async function loadNursesByWard(ward) {
+
+    const nurseSelect =
+        document.getElementById("patientNurseID");
+
+    if (!nurseSelect) {
+        console.error("patientNurseID not found");
+        return;
+    }
+
+    nurseSelect.innerHTML =
+        `<option value="">Select Nurse</option>`;
+
+    if (!ward) return;
+
+    try {
+
+        const response =
+            await fetch(
+                `/patients/nurses/${encodeURIComponent(ward)}`
+            );
+
+        const data = await response.json();
+
+        console.log("NURSE DATA:", data);
+
+        if (!data.success) {
+            throw new Error(data.error || "Nurse loading failed");
+        }
+
+        data.nurses.forEach(nurse => {
+
+            const option =
+                document.createElement("option");
+
+            option.value = nurse.NRID;
+
+            option.textContent =
+                `${nurse.Name} (${nurse.NRID})`;
+
+            nurseSelect.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error("NURSE ERROR:", error);
+
+    }
+}
+
+
+// =========================================================
+// WARD CHANGE
+// =========================================================
+
+document.addEventListener("change", function(event) {
+
+    if (event.target.id === "patientWard") {
+
+        const ward = event.target.value;
+
+        console.log("SELECTED WARD:", ward);
+
+        loadBedsByWard(ward);
+        loadNursesByWard(ward);
+    }
+
+});
+
+
+// =========================================================
+// BED CHANGE
+// =========================================================
+
+document.addEventListener("change", function(event) {
+
+    if (event.target.id === "patientBedID") {
+
+        const selected =
+            event.target.options[
+                event.target.selectedIndex
+            ];
+
+        const roomInput =
+            document.getElementById("patientRoomNumber");
+
+        if (roomInput) {
+
+            roomInput.value =
+                selected.dataset.room || "";
+
+        }
 
     }
 
 });
 
-console.log("Patients Module Loaded Successfully");
-// ======================================================
-// SUCCESS MESSAGE
-// ======================================================
+// =========================================================
+// LOAD DOCTORS
+// =========================================================
 
-function showMessage(message, color = "#16a34a") {
+async function loadDoctors() {
 
-    let toast = document.getElementById("toast");
+    const doctorSelect =
+        document.getElementById("patientDoctor");
 
-    if (!toast) {
-
-        toast = document.createElement("div");
-
-        toast.id = "toast";
-
-        document.body.appendChild(toast);
-
+    if (!doctorSelect) {
+        console.error("patientDoctor not found");
+        return;
     }
 
-    toast.innerText = message;
+    doctorSelect.innerHTML =
+        `<option value="">Select Doctor</option>`;
 
-    toast.style.background = color;
+    try {
 
-    toast.style.position = "fixed";
+        const response =
+            await fetch("/patients/doctors");
 
-    toast.style.top = "20px";
+        const data =
+            await response.json();
 
-    toast.style.right = "20px";
+        console.log("DOCTOR DATA:", data);
 
-    toast.style.padding = "15px 25px";
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.error || "Doctor loading failed"
+            );
+        }
 
-    toast.style.color = "#fff";
+        data.doctors.forEach(doctor => {
 
-    toast.style.borderRadius = "10px";
+            const option =
+                document.createElement("option");
 
-    toast.style.fontWeight = "600";
+            option.value = doctor.Name;
 
-    toast.style.boxShadow = "0 5px 15px rgba(0,0,0,.2)";
+            option.textContent =
+                `${doctor.Name} (${doctor.DRID}) - ${doctor.Department}`;
 
-    toast.style.zIndex = "9999";
+            doctorSelect.appendChild(option);
 
-    toast.style.display = "block";
+        });
 
-    setTimeout(() => {
+    } catch (error) {
 
-        toast.style.display = "none";
+        console.error(
+            "DOCTOR ERROR:",
+            error
+        );
 
-    }, 3000);
-
-}
-// ======================================================
-// RESET STORAGE
-// ======================================================
-
-function resetPatients() {
-
-    if (!confirm("Delete all patient records?")) return;
-
-    localStorage.removeItem(STORAGE_KEY);
-
-    patients = [];
-
-    filteredPatients = [];
-
-    render();
-
-    showMessage("All Patients Deleted", "#dc2626");
-
-}
-// ======================================================
-// TOTAL PATIENTS
-// ======================================================
-
-function totalPatientCount() {
-
-    return patients.length;
-
+    }
 }
 
-function admittedCount() {
+// =========================================================
+// LOAD MEDICINES
+// =========================================================
 
-    return patients.filter(
+async function loadMedicines() {
 
-        p => p.status === "Admitted"
+    const medicineField =
+        document.getElementById("patientMedicineRequired");
 
-    ).length;
+    if (!medicineField) {
+        console.error("patientMedicineRequired not found");
+        return;
+    }
 
+    try {
+
+        const response =
+            await fetch("/patients/medicines");
+
+        const data =
+            await response.json();
+
+        console.log("MEDICINE DATA:", data);
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.error || "Medicine loading failed"
+            );
+        }
+
+        // Create dropdown if currently an input
+        if (medicineField.tagName !== "SELECT") {
+
+            const medicineSelect =
+                document.createElement("select");
+
+            medicineSelect.id =
+                "patientMedicineRequired";
+
+            medicineSelect.name =
+                "patientMedicineRequired";
+
+            medicineField.replaceWith(medicineSelect);
+        }
+
+        const medicineSelect =
+            document.getElementById(
+                "patientMedicineRequired"
+            );
+
+        medicineSelect.innerHTML =
+            `<option value="">Select Medicine</option>`;
+
+        data.medicines.forEach(medicine => {
+
+            const option =
+                document.createElement("option");
+
+            option.value =
+                medicine["Medicine Name"];
+
+            option.textContent =
+                `${medicine["Medicine Name"]} | Stock: ${medicine.Quantity}`;
+
+            medicineSelect.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "MEDICINE ERROR:",
+            error
+        );
+
+    }
 }
 
-function recoveringCount() {
+// =========================================================
+// LOAD EVERYTHING
+// =========================================================
 
-    return patients.filter(
+document.addEventListener("DOMContentLoaded", function() {
 
-        p => p.status === "Recovering"
+    loadWards();
 
-    ).length;
+    loadDoctors();
 
-}
-
-function criticalCount() {
-
-    return patients.filter(
-
-        p => p.status === "Critical"
-
-    ).length;
-
-}
-
-function dischargedCount() {
-
-    return patients.filter(
-
-        p => p.status === "Discharged"
-
-    ).length;
-
-}
-// ======================================================
-// AUTO SAVE
-// ======================================================
-
-window.addEventListener("beforeunload", () => {
-
-    savePatients();
+    loadMedicines();
 
 });
+
+// ======================================================
+// EXPORT FUNCTIONS
+// ======================================================
+
+window.viewPatient =
+    viewPatient;
+
+window.editPatient =
+    editPatient;
+
+window.deletePatient =
+    deletePatient;
+
+window.nextPage =
+    nextPage;
+
+window.previousPage =
+    previousPage;

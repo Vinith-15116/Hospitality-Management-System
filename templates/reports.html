@@ -11,10 +11,10 @@ content="width=device-width, initial-scale=1.0">
 <title>Reports & Analytics</title>
 
 <link rel="stylesheet"
-href="../static/css/dashboard.css">
+href="/static/css/dashboard.css">
 
 <link rel="stylesheet"
-href="../static/css/reports.css">
+href="/static/css/reports.css">
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
 rel="stylesheet">
@@ -30,7 +30,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 
 <div class="container">
 
-<!-- Sidebar -->
+<!-- ================= SIDEBAR ================= -->
 
 <aside class="sidebar">
 
@@ -45,94 +45,80 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 <ul>
 
 <li>
-
-<a href="dashboard.html">
-
+<a href="/">
 <i class="fa-solid fa-house"></i>
-
-Dashboard
-
+<span>Dashboard</span>
 </a>
-
 </li>
 
 <li>
-
-<a href="patients.html">
-
+<a href="/patients-page">
 <i class="fa-solid fa-user-injured"></i>
-
-Patients
-
+<span>Patients</span>
 </a>
-
 </li>
 
 <li>
-
-<a href="doctors.html">
-
+<a href="/doctors-page">
 <i class="fa-solid fa-user-doctor"></i>
-
-Doctors
-
+<span>Doctors</span>
 </a>
-
 </li>
 
 <li>
-
-<a href="nurses.html">
-
+<a href="/nurses-page">
 <i class="fa-solid fa-user-nurse"></i>
-
-Nurses
-
+<span>Nurses</span>
 </a>
-
 </li>
 
 <li>
-
-<a href="beds.html">
-
+<a href="/beds-page">
 <i class="fa-solid fa-bed"></i>
-
-Beds
-
+<span>Beds</span>
 </a>
-
 </li>
 
 <li>
-
-<a href="pharmacy.html">
-
+<a href="/pharmacy-page">
 <i class="fa-solid fa-pills"></i>
-
-Pharmacy
-
+<span>Pharmacy</span>
 </a>
+</li>
 
+<li>
+<a href="/prediction-page">
+<i class="fa-solid fa-brain"></i>
+<span>AI Prediction</span>
+</a>
+</li>
+
+<li>
+<a href="/analytics-page">
+<i class="fa-solid fa-chart-line"></i>
+<span>Analytics</span>
+</a>
 </li>
 
 <li class="active">
-
-<a href="reports.html">
-
-<i class="fa-solid fa-chart-line"></i>
-
-Reports
-
+<a href="/reports-page">
+<i class="fa-solid fa-file-lines"></i>
+<span>Reports</span>
 </a>
+</li>
 
+<li>
+<a href="/logout">
+    <i class="fa-solid fa-right-from-bracket"></i>
+    <span>Logout</span>
+</a>
 </li>
 
 </ul>
 
 </aside>
 
-<!-- Main -->
+<!-- ================= MAIN ================= -->
 
 <main class="main">
 
@@ -171,6 +157,7 @@ Export CSV
 </div>
 
 </header>
+
 <!-- ================= DASHBOARD CARDS ================= -->
 
 <section class="cards">
@@ -222,16 +209,6 @@ Export CSV
 <h3>Total Medicines</h3>
 
 <h2 id="totalMedicines">0</h2>
-
-</div>
-
-<div class="card">
-
-<i class="fa-solid fa-chart-line"></i>
-
-<h3>Revenue</h3>
-
-<h2 id="totalRevenue">₹0</h2>
 
 </div>
 
@@ -317,15 +294,8 @@ Generate Report
 
 </div>
 
-<div class="chart-card">
-
-<h3>Hospital Revenue</h3>
-
-<canvas id="revenueChart"></canvas>
-
-</div>
-
 </section>
+
 <!-- ================= SUMMARY TABLE ================= -->
 
 <section class="table-box">
@@ -400,16 +370,6 @@ Generate Report
 
 </tr>
 
-<tr>
-
-<td>Total Revenue</td>
-
-<td id="summaryRevenue">₹0</td>
-
-<td>Updated</td>
-
-</tr>
-
 </tbody>
 
 </table>
@@ -474,7 +434,7 @@ No Recent Activities
 
 </div>
 
-<script src="../static/js/reports.js"></script>
+<script src="/static/js/reports.js"></script>
 
 </body>
 

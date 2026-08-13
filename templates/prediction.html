@@ -9,9 +9,9 @@
 
 <title>Prediction Center</title>
 
-<link rel="stylesheet" href="../static/css/dashboard.css">
+<link rel="stylesheet" href="/static/css/dashboard.css">
 
-<link rel="stylesheet" href="../static/css/prediction.css">
+<link rel="stylesheet" href="/static/css/prediction.css">
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -39,65 +39,72 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 <ul>
 
 <li>
-<a href="dashboard.html">
+<a href="/">
 <i class="fa-solid fa-house"></i>
-Dashboard
+<span>Dashboard</span>
 </a>
 </li>
 
 <li>
-<a href="patients.html">
+<a href="/patients-page">
 <i class="fa-solid fa-user-injured"></i>
-Patients
+<span>Patients</span>
 </a>
 </li>
 
 <li>
-<a href="doctors.html">
+<a href="/doctors-page">
 <i class="fa-solid fa-user-doctor"></i>
-Doctors
+<span>Doctors</span>
 </a>
 </li>
 
 <li>
-<a href="nurses.html">
+<a href="/nurses-page">
 <i class="fa-solid fa-user-nurse"></i>
-Nurses
+<span>Nurses</span>
 </a>
 </li>
 
 <li>
-<a href="beds.html">
+<a href="/beds-page">
 <i class="fa-solid fa-bed"></i>
-Beds
+<span>Beds</span>
 </a>
 </li>
 
 <li>
-<a href="pharmacy.html">
+<a href="/pharmacy-page">
 <i class="fa-solid fa-pills"></i>
-Pharmacy
+<span>Pharmacy</span>
 </a>
 </li>
 
 <li class="active">
-<a href="prediction.html">
+<a href="/prediction-page">
 <i class="fa-solid fa-brain"></i>
-Prediction
+<span>AI Prediction</span>
 </a>
 </li>
 
 <li>
-<a href="billing.html">
-<i class="fa-solid fa-file-invoice-dollar"></i>
-Billing
-</a>
-</li>
-
-<li>
-<a href="reports.html">
+<a href="/analytics-page">
 <i class="fa-solid fa-chart-line"></i>
-Reports
+<span>Analytics</span>
+</a>
+</li>
+
+<li>
+<a href="/reports-page">
+<i class="fa-solid fa-file-lines"></i>
+<span>Reports</span>
+</a>
+</li>
+
+<li>
+<a href="/logout">
+    <i class="fa-solid fa-right-from-bracket"></i>
+    <span>Logout</span>
 </a>
 </li>
 
@@ -185,6 +192,7 @@ Refresh
 </div>
 
 </section>
+
 <!-- ================= PREDICTION MODULES ================= -->
 
 <section class="prediction-center">
@@ -331,6 +339,7 @@ Refresh
     </div>
 
 </section>
+
 <!-- ================= DISEASE PREDICTION MODAL ================= -->
 
 <div class="modal" id="diseaseModal">
@@ -388,6 +397,7 @@ Close
 </div>
 
 </div>
+
 <!-- ================= MEDICINE DEMAND MODAL ================= -->
 
 <div class="modal" id="medicineModal">
@@ -447,6 +457,7 @@ Close
 </div>
 
 </div>
+
 <!-- ================= LENGTH OF STAY MODAL ================= -->
 
 <div class="modal" id="stayModal">
@@ -494,6 +505,7 @@ Close
 </div>
 
 </div>
+
 <!-- ================= PREDICTION HISTORY ================= -->
 
 <section class="table-box">
@@ -580,7 +592,7 @@ Next »
 
 </div>
 
-<script src="../static/js/prediction.js"></script>
+<script src="/static/js/prediction.js"></script>
 
 </body>
 

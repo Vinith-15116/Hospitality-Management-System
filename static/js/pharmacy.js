@@ -53,83 +53,94 @@ const expiredMedicines = document.getElementById("expiredMedicines");
 
 document.addEventListener("DOMContentLoaded", init);
 
-function init(){
+async function init(){
 
-    loadMedicines();
+    await loadMedicines();
 
     registerEvents();
 
     applyFilters();
 
 }
+
 // ======================================================
 // LOAD MEDICINES
 // ======================================================
 
-function loadMedicines(){
+async function loadMedicines() {
 
-    const data = localStorage.getItem(STORAGE_KEY);
+    try {
 
-    if(data){
+        const response = await fetch("/api/pharmacy");
 
-        medicines = JSON.parse(data);
+        const data = await response.json();
+
+        console.log("Pharmacy API Response:", data);
+
+        if (!data.success) {
+
+            console.error(
+                "Failed to load medicines:",
+                data.error
+            );
+
+            medicines = [];
+            filteredMedicines = [];
+
+            return;
+        }
+
+
+        medicines = data.medicines.map(medicine => ({
+
+            id:
+                medicine.MedicineID || "",
+
+            name:
+                medicine.MedicineName || "",
+
+            category:
+                medicine.Category || "",
+
+            quantity:
+                Number(medicine.Quantity || 0),
+
+            price:
+                Number(medicine.Price || 0),
+
+            expiry:
+                medicine.ExpiryDate || "",
+
+            status:
+                medicine.Status || ""
+
+        }));
+
+
+        filteredMedicines = [...medicines];
+
+
+        console.log(
+            "Medicines loaded from MySQL:",
+            medicines
+        );
 
     }
 
-    else{
+    catch (error) {
 
-        medicines = [
+        console.error(
+            "GET PHARMACY ERROR:",
+            error
+        );
 
-            {
+        medicines = [];
 
-                id:"MED001",
-
-                name:"Paracetamol 500mg",
-
-                category:"Tablet",
-
-                quantity:250,
-
-                price:15,
-
-                expiry:"2027-06-15",
-
-                supplier:"Sun Pharma",
-
-                status:"In Stock"
-
-            },
-
-            {
-
-                id:"MED002",
-
-                name:"Amoxicillin",
-
-                category:"Capsule",
-
-                quantity:15,
-
-                price:120,
-
-                expiry:"2026-08-20",
-
-                supplier:"Cipla",
-
-                status:"Low Stock"
-
-            }
-
-        ];
-
-        saveMedicines();
+        filteredMedicines = [];
 
     }
-
-    filteredMedicines = [...medicines];
 
 }
-
 // ======================================================
 // SAVE
 // ======================================================
@@ -509,134 +520,233 @@ function clearForm(){
 // SAVE MEDICINE
 // ======================================================
 
-function saveMedicine(){
+async function saveMedicine() {
 
-    let quantity = parseInt(
+    const quantity = parseInt(
         document.getElementById("medicineQuantity").value
     );
 
-    const expiry = document.getElementById("medicineExpiry").value;
+    const expiry =
+        document.getElementById("medicineExpiry").value;
 
-    let status = document.getElementById("medicineStatus").value;
+    const medicine = {
 
-    // ---------- Auto Status ----------
+        MedicineID:
+            editIndex === -1
+                ? document.getElementById("medicineId").value.trim()
+                : medicines[editIndex].id,
 
-    const today = new Date();
+        MedicineName:
+            document.getElementById("medicineName").value.trim(),
 
-    const expiryDate = new Date(expiry);
+        Category:
+            document.getElementById("medicineCategory").value,
 
-    if(expiry && expiryDate < today){
+        Quantity:
+            quantity,
 
-        status = "Expired";
+        Price:
+            document.getElementById("medicinePrice").value,
 
-    }
-
-    else if(quantity === 0){
-
-        status = "Out of Stock";
-
-    }
-
-    else if(quantity <= 20){
-
-        status = "Low Stock";
-
-    }
-
-    else{
-
-        status = "In Stock";
-
-    }
-
-    const medicine={
-
-        id: editIndex===-1
-
-            ? document.getElementById("medicineId").value.trim()
-
-            : medicines[editIndex].id,
-
-        name:document.getElementById("medicineName").value.trim(),
-
-        category:document.getElementById("medicineCategory").value,
-
-        quantity:quantity,
-
-        price:document.getElementById("medicinePrice").value,
-
-        expiry:expiry,
-
-        supplier:document.getElementById("medicineSupplier").value.trim(),
-
-        status:status
+        ExpiryDate:
+            expiry
 
     };
 
-    if(
 
-        medicine.id==="" ||
+    // ============================================
+    // VALIDATION
+    // ============================================
 
-        medicine.name==="" ||
-
-        medicine.category===""
-
-    ){
+    if (
+        medicine.MedicineID === "" ||
+        medicine.MedicineName === "" ||
+        medicine.Category === "" ||
+        isNaN(medicine.Quantity) ||
+        medicine.ExpiryDate === ""
+    ) {
 
         alert("Please fill all required fields.");
 
         return;
+    }
+
+
+    try {
+
+        let response;
+
+
+        // ============================================
+        // ADD MEDICINE
+        // ============================================
+
+        if (editIndex === -1) {
+
+            response = await fetch(
+                "/api/pharmacy",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(medicine)
+                }
+            );
+
+        }
+
+
+        // ============================================
+        // EDIT MEDICINE
+        // ============================================
+
+        else {
+
+            const existingMedicine =
+                medicines[editIndex];
+
+
+            response = await fetch(
+                `/api/pharmacy/${encodeURIComponent(
+                    existingMedicine.id
+                )}`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(medicine)
+                }
+            );
+
+        }
+
+
+        // ============================================
+        // API RESPONSE
+        // ============================================
+
+        const result = await response.json();
+
+
+        // ============================================
+        // ERROR
+        // ============================================
+
+        if (!response.ok || !result.success) {
+
+            alert(
+                result.error ||
+                "Unable to save medicine."
+            );
+
+            return;
+        }
+
+
+        // ============================================
+        // SUCCESS
+        // ============================================
+
+        alert(
+            editIndex === -1
+                ? "Medicine added successfully!"
+                : "Medicine updated successfully!"
+        );
+
+
+        closeModal();
+
+
+        // ============================================
+        // RELOAD FROM MYSQL
+        // ============================================
+
+        await loadMedicines();
+
+        applyFilters();
 
     }
 
-    if(editIndex===-1){
+    catch (error) {
 
-        medicines.push(medicine);
+        console.error(
+            "SAVE MEDICINE ERROR:",
+            error
+        );
+
+        alert(
+            "Server error while saving medicine."
+        );
 
     }
-
-    else{
-
-        medicines[editIndex]=medicine;
-
-    }
-
-    saveMedicines();
-
-    applyFilters();
-
-    closeModal();
 
 }
 // ======================================================
 // EDIT MEDICINE
 // ======================================================
 
-function editMedicine(index){
+function editMedicine(index) {
 
-    editIndex=index;
+    editIndex = index;
 
-    const medicine=medicines[index];
+    const medicine = medicines[index];
 
-    document.getElementById("modalTitle").innerText="Edit Medicine";
+    if (!medicine) {
 
-    document.getElementById("medicineId").value=medicine.id;
+        alert("Medicine not found.");
 
-    document.getElementById("medicineName").value=medicine.name;
+        return;
+    }
 
-    document.getElementById("medicineCategory").value=medicine.category;
 
-    document.getElementById("medicineQuantity").value=medicine.quantity;
+    document.getElementById("modalTitle").innerText =
+        "Edit Medicine";
 
-    document.getElementById("medicinePrice").value=medicine.price;
 
-    document.getElementById("medicineExpiry").value=medicine.expiry;
+    document.getElementById("medicineId").value =
+        medicine.id || "";
 
-    document.getElementById("medicineSupplier").value=medicine.supplier;
 
-    document.getElementById("medicineStatus").value=medicine.status;
+    document.getElementById("medicineName").value =
+        medicine.name || "";
 
-    modal.style.display="flex";
+
+    document.getElementById("medicineCategory").value =
+        medicine.category || "";
+
+
+    document.getElementById("medicineQuantity").value =
+        medicine.quantity || 0;
+
+
+    document.getElementById("medicinePrice").value =
+        medicine.price || 0;
+
+
+    document.getElementById("medicineExpiry").value =
+        medicine.expiry || "";
+
+
+    // Supplier is not currently stored in MySQL
+    document.getElementById("medicineSupplier").value =
+        medicine.supplier || "";
+
+
+    document.getElementById("medicineStatus").value =
+        medicine.status || "In Stock";
+
+
+    // Medicine ID should not be changed during edit
+    document.getElementById("medicineId").readOnly = true;
+
+
+    modal.style.display = "flex";
 
 }
 // ======================================================
@@ -683,21 +793,71 @@ function deleteMedicine(index){
 
 }
 
-function confirmDelete(){
+async function confirmDelete() {
 
-    if(deleteIndex === -1) return;
+    if (deleteIndex === -1) {
+        return;
+    }
 
-    medicines.splice(deleteIndex,1);
+    const medicine = medicines[deleteIndex];
 
-    deleteIndex = -1;
+    if (!medicine || !medicine.id) {
 
-    saveMedicines();
+        alert("Invalid medicine selected.");
 
-    applyFilters();
+        return;
+    }
 
-    deleteModal.style.display = "none";
+    try {
+
+        const response = await fetch(
+            `/api/pharmacy/${encodeURIComponent(medicine.id)}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+
+            alert(
+                result.error ||
+                "Unable to delete medicine."
+            );
+
+            return;
+        }
+
+        alert("Medicine deleted successfully!");
+
+        deleteIndex = -1;
+
+        deleteModal.style.display = "none";
+
+        // Reload directly from MySQL
+
+        await loadMedicines();
+
+        applyFilters();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "DELETE MEDICINE ERROR:",
+            error
+        );
+
+        alert(
+            "Server error while deleting medicine."
+        );
+
+    }
 
 }
+
 // ======================================================
 // PAGINATION
 // ======================================================

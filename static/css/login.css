@@ -1,0 +1,309 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Poppins", sans-serif;
+    min-height: 100vh;
+    background: #f1f5f9;
+}
+
+.login-container {
+    min-height: 100vh;
+    display: flex;
+}
+
+
+/* =========================================
+   LEFT SIDE
+========================================= */
+
+.login-left {
+    width: 50%;
+    background: #23429a;
+    color: white;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+
+    padding: 60px;
+}
+
+.hospital-icon {
+    width: 100px;
+    height: 100px;
+
+    border-radius: 25px;
+
+    background: white;
+    color: #2864e8;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 52px;
+
+    margin-bottom: 25px;
+}
+
+.login-left h1 {
+    font-size: 42px;
+    font-weight: 700;
+}
+
+.login-left > p {
+    font-size: 17px;
+    opacity: 0.85;
+    margin-top: 8px;
+}
+
+.welcome-text {
+    margin-top: 80px;
+    max-width: 450px;
+}
+
+.welcome-text h2 {
+    font-size: 28px;
+    margin-bottom: 12px;
+}
+
+.welcome-text p {
+    font-size: 15px;
+    line-height: 1.8;
+    opacity: 0.85;
+}
+
+
+/* =========================================
+   RIGHT SIDE
+========================================= */
+
+.login-right {
+    width: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px;
+}
+
+.login-box {
+    width: 100%;
+    max-width: 450px;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-header > i {
+    font-size: 45px;
+    color: #2864e8;
+    margin-bottom: 15px;
+}
+
+.login-header h2 {
+    font-size: 30px;
+    color: #101828;
+}
+
+.login-header p {
+    color: #667085;
+    margin-top: 5px;
+}
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+.error-message {
+    background: #fff1f2;
+    color: #dc2626;
+
+    border: 1px solid #fecdd3;
+
+    padding: 12px 15px;
+
+    border-radius: 10px;
+
+    margin-bottom: 20px;
+
+    font-size: 14px;
+}
+
+.error-message i {
+    margin-right: 7px;
+}
+
+
+/* =========================================
+   INPUTS
+========================================= */
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    color: #344054;
+
+    margin-bottom: 8px;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-wrapper > i {
+    position: absolute;
+
+    left: 16px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    color: #667085;
+}
+
+.input-wrapper input {
+    width: 100%;
+
+    height: 54px;
+
+    border: 1px solid #d0d5dd;
+
+    border-radius: 12px;
+
+    padding: 0 50px;
+
+    font-family: "Poppins", sans-serif;
+    font-size: 14px;
+
+    outline: none;
+
+    transition: 0.2s;
+}
+
+.input-wrapper input:focus {
+    border-color: #2864e8;
+
+    box-shadow:
+        0 0 0 4px rgba(40, 100, 232, 0.1);
+}
+
+
+/* =========================================
+   PASSWORD TOGGLE
+========================================= */
+
+.password-toggle {
+    position: absolute;
+
+    right: 15px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    border: none;
+
+    background: transparent;
+
+    color: #667085;
+
+    cursor: pointer;
+
+    font-size: 16px;
+}
+
+
+/* =========================================
+   LOGIN BUTTON
+========================================= */
+
+.login-btn {
+    width: 100%;
+
+    height: 55px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: #2864e8;
+
+    color: white;
+
+    font-family: "Poppins", sans-serif;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+
+    margin-top: 10px;
+}
+
+.login-btn:hover {
+    background: #1f56d2;
+
+    transform: translateY(-1px);
+}
+
+.login-btn i {
+    margin-right: 8px;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.login-footer {
+    text-align: center;
+
+    margin-top: 30px;
+
+    color: #98a2b3;
+
+    font-size: 12px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 850px) {
+
+    .login-left {
+        display: none;
+    }
+
+    .login-right {
+        width: 100%;
+    }
+
+}

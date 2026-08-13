@@ -9,9 +9,9 @@
 
 <title>Analytics Dashboard</title>
 
-<link rel="stylesheet" href="../static/css/dashboard.css">
+<link rel="stylesheet" href="/static/css/dashboard.css">
 
-<link rel="stylesheet" href="../static/css/analytics.css">
+<link rel="stylesheet" href="/static/css/analytics.css">
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -25,45 +25,95 @@
 
 <div class="container">
 
+<!-- ================= SIDEBAR ================= -->
+
 <aside class="sidebar">
 
 <div class="logo">
 
-<i class="fa-solid fa-chart-line"></i>
+<i class="fa-solid fa-hospital"></i>
 
-<h2>Analytics</h2>
+<h2>Hospital HMS</h2>
 
 </div>
 
 <ul>
 
 <li>
-
-<a href="dashboard.html">
-
+<a href="/">
 <i class="fa-solid fa-house"></i>
-
-Dashboard
-
+<span>Dashboard</span>
 </a>
+</li>
 
+<li>
+<a href="/patients-page">
+<i class="fa-solid fa-user-injured"></i>
+<span>Patients</span>
+</a>
+</li>
+
+<li>
+<a href="/doctors-page">
+<i class="fa-solid fa-user-doctor"></i>
+<span>Doctors</span>
+</a>
+</li>
+
+<li>
+<a href="/nurses-page">
+<i class="fa-solid fa-user-nurse"></i>
+<span>Nurses</span>
+</a>
+</li>
+
+<li>
+<a href="/beds-page">
+<i class="fa-solid fa-bed"></i>
+<span>Beds</span>
+</a>
+</li>
+
+<li>
+<a href="/pharmacy-page">
+<i class="fa-solid fa-pills"></i>
+<span>Pharmacy</span>
+</a>
+</li>
+
+<li>
+<a href="/prediction-page">
+<i class="fa-solid fa-brain"></i>
+<span>AI Prediction</span>
+</a>
 </li>
 
 <li class="active">
-
-<a href="analytics.html">
-
-<i class="fa-solid fa-chart-pie"></i>
-
-Analytics
-
+<a href="/analytics-page">
+<i class="fa-solid fa-chart-line"></i>
+<span>Analytics</span>
 </a>
+</li>
 
+<li>
+<a href="/reports-page">
+<i class="fa-solid fa-file-lines"></i>
+<span>Reports</span>
+</a>
+</li>
+
+<li>
+<a href="/logout">
+    <i class="fa-solid fa-right-from-bracket"></i>
+    <span>Logout</span>
+</a>
 </li>
 
 </ul>
 
 </aside>
+
+<!-- ================= MAIN ================= -->
 
 <main class="main">
 
@@ -78,6 +128,7 @@ Analytics
 </div>
 
 </header>
+
 <section class="cards">
 
 <div class="card">
@@ -87,16 +138,6 @@ Analytics
 <h3>Patient Growth</h3>
 
 <h2 id="patientGrowth">0%</h2>
-
-</div>
-
-<div class="card">
-
-<i class="fa-solid fa-money-bill"></i>
-
-<h3>Total Revenue</h3>
-
-<h2 id="analyticsRevenue">₹0</h2>
 
 </div>
 
@@ -121,6 +162,7 @@ Analytics
 </div>
 
 </section>
+
 <section class="charts-grid">
 
 <div class="chart-card">
@@ -141,14 +183,6 @@ Analytics
 
 <div class="chart-card">
 
-<h3>Revenue Analysis</h3>
-
-<canvas id="incomeChart"></canvas>
-
-</div>
-
-<div class="chart-card">
-
 <h3>Medicine Consumption</h3>
 
 <canvas id="medicineChart"></canvas>
@@ -156,6 +190,7 @@ Analytics
 </div>
 
 </section>
+
 <section class="table-box">
 
 <h2>AI Insights</h2>
@@ -228,7 +263,7 @@ Analytics
 
 </div>
 
-<script src="../static/js/analytics.js"></script>
+<script src="/static/js/analytics.js"></script>
 
 </body>
 

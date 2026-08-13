@@ -53,84 +53,86 @@ const maintenanceBeds = document.getElementById("maintenanceBeds");
 
 document.addEventListener("DOMContentLoaded", init);
 
-function init(){
+async function init(){
 
-    loadBeds();
+    await loadBeds();
 
     registerEvents();
 
     applyFilters();
 
 }
+
 // ======================================================
 // LOAD BEDS
 // ======================================================
 
-function loadBeds(){
+async function loadBeds() {
 
-    const data = localStorage.getItem(STORAGE_KEY);
+    try {
 
-    if(data){
+        const response = await fetch("/api/beds");
 
-        beds = JSON.parse(data);
+        const data = await response.json();
 
-    }
+        console.log("Beds API Response:", data);
 
-    else{
+        if (!data.success) {
 
-        beds = [
+            console.error("Failed to load beds:", data.error);
 
-            {
+            beds = [];
 
-                id:"B101",
+            filteredBeds = [];
 
-                ward:"General",
+            return;
+        }
 
-                room:"101",
+        beds = data.beds.map(bed => ({
 
-                bedNumber:"1",
+            id: bed.BedID || bed["Bed ID"] || bed.id || "",
 
-                type:"General",
+            ward: bed.Ward || bed.ward || "",
 
-                patient:"Rahul Sharma",
+            room: String(
+                bed.Room || bed.room || ""
+            ),
 
-                nurse:"Anita Reddy",
+            bedNumber: String(
+                bed["Bed No."] ||
+                bed.BedNo ||
+                bed.Bed_Number ||
+                bed.bedNumber ||
+                ""
+            ),
 
-                charge:1500,
+            type: bed.Type || bed.type || "",
 
-                status:"Occupied"
+            patient: bed.Patient || bed.patient || "",
 
-            },
+            nurse: bed.Nurse || bed.nurse || "",
 
-            {
+            charge: bed.Charge || bed.charge || 0,
 
-                id:"ICU201",
+            status: bed.Status || bed.status || ""
 
-                ward:"ICU",
+        }));
 
-                room:"201",
+        filteredBeds = [...beds];
 
-                bedNumber:"2",
-
-                type:"ICU",
-
-                patient:"",
-
-                nurse:"",
-
-                charge:5000,
-
-                status:"Available"
-
-            }
-
-        ];
-
-        saveBeds();
+        console.log("Beds loaded from MySQL:", beds);
 
     }
 
-    filteredBeds = [...beds];
+    catch (error) {
+
+        console.error("GET BEDS ERROR:", error);
+
+        beds = [];
+
+        filteredBeds = [];
+
+    }
 
 }
 
@@ -197,54 +199,51 @@ function registerEvents(){
 // ======================================================
 // APPLY FILTERS
 // ======================================================
-
 function applyFilters(){
 
-    const keyword = searchBox.value.toLowerCase();
+    const keyword = searchBox.value.toLowerCase().trim();
 
     const ward = wardFilter.value;
 
     const status = statusFilter.value;
 
-    filteredBeds = beds.filter(bed=>{
+    filteredBeds = beds.filter(bed => {
 
         const searchMatch =
 
-        bed.id.toLowerCase().includes(keyword)
+            String(bed.id || "")
+                .toLowerCase()
+                .includes(keyword)
 
-        ||
+            ||
 
-        bed.room.toLowerCase().includes(keyword)
+            String(bed.room || "")
+                .toLowerCase()
+                .includes(keyword)
 
-        ||
+            ||
 
-        bed.patient.toLowerCase().includes(keyword);
+            String(bed.patient || "")
+                .toLowerCase()
+                .includes(keyword)
+
+            ||
+
+            String(bed.ward || "")
+                .toLowerCase()
+                .includes(keyword);
 
         const wardMatch =
-
-        ward==="All"
-
-        ||
-
-        bed.ward===ward;
+            ward === "All" ||
+            bed.ward === ward;
 
         const statusMatch =
+            status === "All" ||
+            bed.status === status;
 
-        status==="All"
-
-        ||
-
-        bed.status===status;
-
-        return searchMatch
-
-        &&
-
-        wardMatch
-
-        &&
-
-        statusMatch;
+        return searchMatch &&
+               wardMatch &&
+               statusMatch;
 
     });
 
@@ -253,6 +252,7 @@ function applyFilters(){
     render();
 
 }
+
 // ======================================================
 // RENDER
 // ======================================================
@@ -503,69 +503,157 @@ function clearForm(){
 // SAVE BED
 // ======================================================
 
-function saveBed(){
+async function saveBed() {
 
-    const bed={
+    const bed = {
 
-        id:document.getElementById("bedId").value.trim(),
+        BedID:
+            document.getElementById("bedId").value.trim(),
 
-        ward:document.getElementById("bedWard").value,
+        Ward:
+            document.getElementById("bedWard").value,
 
-        room:document.getElementById("roomNumber").value.trim(),
+        Room:
+            document.getElementById("roomNumber").value.trim(),
 
-        bedNumber:document.getElementById("bedNumber").value.trim(),
+        BedNo:
+            document.getElementById("bedNumber").value.trim(),
 
-        type:document.getElementById("bedType").value,
+        Type:
+            document.getElementById("bedType").value,
 
-        patient:document.getElementById("assignedPatient").value.trim(),
+        Patient:
+            document.getElementById("assignedPatient").value.trim(),
 
-        nurse:document.getElementById("assignedNurse").value.trim(),
-
-        charge:document.getElementById("dailyCharge").value,
-
-        status:document.getElementById("bedStatus").value
-
+        Status:
+            document.getElementById("bedStatus").value
     };
 
-    if(
 
-        bed.id==="" ||
+    // ============================================
+    // VALIDATION
+    // ============================================
 
-        bed.ward==="" ||
-
-        bed.room==="" ||
-
-        bed.bedNumber==="" ||
-
-        bed.type===""
-
-    ){
+    if (
+        bed.BedID === "" ||
+        bed.Ward === "" ||
+        bed.Room === "" ||
+        bed.BedNo === "" ||
+        bed.Type === ""
+    ) {
 
         alert("Please fill all required fields.");
 
         return;
+    }
+
+
+    try {
+
+        let response;
+
+
+        // ========================================
+        // ADD BED
+        // ========================================
+
+        if (editIndex === -1) {
+
+            response = await fetch("/api/beds", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(bed)
+
+            });
+
+        }
+
+
+        // ========================================
+        // UPDATE BED
+        // ========================================
+
+        else {
+
+            const existingBed = beds[editIndex];
+
+            response = await fetch(
+                `/api/beds/${encodeURIComponent(existingBed.id)}`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(bed)
+                }
+            );
+
+        }
+
+
+        const result = await response.json();
+
+
+        // ========================================
+        // API ERROR
+        // ========================================
+
+        if (!response.ok || !result.success) {
+
+            alert(
+                result.error ||
+                "Unable to save bed."
+            );
+
+            return;
+        }
+
+
+        // ========================================
+        // SUCCESS
+        // ========================================
+
+        alert(
+            editIndex === -1
+                ? "Bed added successfully!"
+                : "Bed updated successfully!"
+        );
+
+
+        closeModal();
+
+
+        // Reload from MySQL
+
+        await loadBeds();
+
+        applyFilters();
+
 
     }
 
-    if(editIndex===-1){
+    catch (error) {
 
-        beds.push(bed);
+        console.error(
+            "SAVE BED ERROR:",
+            error
+        );
+
+        alert(
+            "Server error while saving bed."
+        );
 
     }
-
-    else{
-
-        beds[editIndex]=bed;
-
-    }
-
-    saveBeds();
-
-    applyFilters();
-
-    closeModal();
 
 }
+
 // ======================================================
 // EDIT BED
 // ======================================================
@@ -645,19 +733,77 @@ function deleteBed(index){
 
 }
 
-function confirmDelete(){
+async function confirmDelete() {
 
-    if(deleteIndex === -1) return;
+    if (deleteIndex === -1) {
+        return;
+    }
 
-    beds.splice(deleteIndex,1);
 
-    deleteIndex = -1;
+    const bed = beds[deleteIndex];
 
-    saveBeds();
 
-    applyFilters();
+    if (!bed || !bed.id) {
 
-    deleteModal.style.display = "none";
+        alert("Invalid bed selected.");
+
+        return;
+    }
+
+
+    try {
+
+        const response = await fetch(
+            `/api/beds/${encodeURIComponent(bed.id)}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+
+        const result = await response.json();
+
+
+        if (!response.ok || !result.success) {
+
+            alert(
+                result.error ||
+                "Unable to delete bed."
+            );
+
+            return;
+        }
+
+
+        alert("Bed deleted successfully!");
+
+
+        deleteIndex = -1;
+
+        deleteModal.style.display = "none";
+
+
+        // Reload from MySQL
+
+        await loadBeds();
+
+        applyFilters();
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "DELETE BED ERROR:",
+            error
+        );
+
+        alert(
+            "Server error while deleting bed."
+        );
+
+    }
 
 }
 // ======================================================

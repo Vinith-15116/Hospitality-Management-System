@@ -63,86 +63,83 @@ function init(){
 
 }
 // ======================================================
-// LOAD DOCTORS
+// LOAD DOCTORS FROM DATABASE
 // ======================================================
 
-function loadDoctors(){
+async function loadDoctors(){
 
-    const data = localStorage.getItem(STORAGE_KEY);
+    try {
 
-    if(data){
+        const response = await fetch("/api/doctors");
 
-        doctors = JSON.parse(data);
+        const data = await response.json();
+
+        console.log("DOCTORS FROM DATABASE:", data);
+
+        if (!response.ok || !data.success) {
+
+            throw new Error(
+                data.error || "Failed to load doctors"
+            );
+
+        }
+
+
+        doctors = data.doctors.map(doctor => ({
+
+            id: doctor.DRID,
+
+            name: doctor.Name,
+
+            department: doctor.Department,
+
+            qualification: doctor.Qualification,
+
+            experience: doctor.Experience,
+
+            phone: doctor.Phone,
+
+            status: doctor.Status,
+
+           patientCount: doctor.PatientCount || 0,
+
+patientNames: doctor.PatientNames
+    ? doctor.PatientNames.split("||")
+    : []
+
+        }));
+
+
+        filteredDoctors = [...doctors];
+
+        console.log(
+            "DOCTORS LOADED:",
+            doctors.length
+        );
+
+
+        // IMPORTANT:
+        // Render the data after API finishes loading
+
+        currentPage = 1;
+
+        render();
+
+
+    } catch(error){
+
+        console.error(
+            "DOCTOR DATABASE ERROR:",
+            error
+        );
+
+        doctors = [];
+
+        filteredDoctors = [];
+
+        render();
 
     }
-
-    else{
-
-        doctors = [
-
-            {
-
-                id:1,
-
-                name:"Dr. Rajesh Mehta",
-
-                department:"Cardiology",
-
-                qualification:"MBBS, MD",
-
-                experience:12,
-
-                phone:"9876543210",
-
-                email:"rajesh@gmail.com",
-
-                fee:800,
-
-                shift:"Morning",
-
-                status:"Available",
-
-                room:"101",
-
-                joiningDate:"2024-02-12"
-
-            },
-
-            {
-
-                id:2,
-
-                name:"Dr. Priya Sharma",
-
-                department:"Neurology",
-
-                qualification:"MBBS, DM",
-
-                experience:8,
-
-                phone:"9123456789",
-
-                email:"priya@gmail.com",
-
-                fee:900,
-
-                shift:"Evening",
-
-                status:"Busy",
-
-                room:"205",
-
-                joiningDate:"2023-08-20"
-
-            }
-
-        ];
-
-        saveDoctors();
-
-    }
-
-    filteredDoctors = [...doctors];
 
 }
 
@@ -289,11 +286,9 @@ function renderDashboard(){
 
     availableDoctors.innerText=
 
-    doctors.filter(
-
-    d=>d.status==="Available"
-
-    ).length;
+   doctors.filter(
+    d => d.status === "Active"
+).length;
 
     leaveDoctors.innerText=
 
@@ -332,7 +327,7 @@ function renderTable(){
 
         <tr>
 
-            <td colspan="8" style="text-align:center;padding:30px;">
+            <td colspan="9" style="text-align:center;padding:30px;">
 
                 No Doctors Found
 
@@ -368,13 +363,22 @@ function renderTable(){
 
         <td>${getStatusBadge(doctor.status)}</td>
 
-        <td>
+<td class="patient-list">
+    ${
+        doctor.patientNames && doctor.patientNames.length > 0
+        ?
+        doctor.patientNames.map(
+            patient => `<div class="patient-name">${patient}</div>`
+        ).join("")
+        :
+        `<span class="no-patient">No patients</span>`
+    }
+</td>
 
-            <button
-
-            class="view-btn"
-
-            onclick="viewDoctor(${index})">
+<td>
+    <button
+        class="view-btn"
+        onclick="viewDoctor(${index})">
 
             <i class="fa-solid fa-eye"></i>
 
@@ -417,11 +421,11 @@ function getStatusBadge(status){
 
     switch(status){
 
-        case "Available":
+        case "Active":
 
-            return `<span class="available">
+            return `<span class="active">
 
-            Available
+            Active
 
             </span>`;
 
@@ -500,7 +504,7 @@ function clearForm(){
 
     document.getElementById("doctorShift").value = "Morning";
 
-    document.getElementById("doctorStatus").value = "Available";
+    document.getElementById("doctorStatus").value = "Active";
 
     document.getElementById("doctorRoom").value = "";
 
@@ -515,7 +519,7 @@ function saveDoctor(){
 
     const doctor={
 
-        id: editIndex===-1 ? Date.now() : doctors[editIndex].id,
+        DRID: editIndex===-1 ? Date.now() : doctors[editIndex].DRID,
 
         name:document.getElementById("doctorName").value.trim(),
 

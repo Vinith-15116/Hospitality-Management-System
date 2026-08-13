@@ -3,226 +3,523 @@
 // Hospital Hospitality Management System
 // ===========================================
 
-document.addEventListener("DOMContentLoaded", function () {
 
-    console.log("Dashboard Loaded Successfully");
+// ===========================================
+// GLOBAL VARIABLES
+// ===========================================
 
-    //----------------------------------
-    // Animated Counter
-    //----------------------------------
+let lineChart = null;
+let pieChart = null;
 
-    const counters = document.querySelectorAll(".card h2");
 
-    counters.forEach(counter => {
+// ===========================================
+// LOAD REAL DASHBOARD DATA
+// ===========================================
 
-        let text = counter.innerText;
+async function loadDashboardData() {
 
-        let target = text.replace(/[^\d]/g, "");
+    try {
 
-        if(target==="") return;
+        const response = await fetch("/api/dashboard-data");
 
-        target = parseInt(target);
+        const data = await response.json();
 
-        let count = 0;
 
-        const speed = Math.ceil(target / 80);
+        if (!data.success) {
 
-        function updateCounter(){
+            console.error(
+                "Dashboard error:",
+                data.error
+            );
 
-            count += speed;
-
-            if(count >= target){
-
-                count = target;
-
-            }
-
-            if(text.includes("₹")){
-
-                counter.innerText = "₹" + count + "K";
-
-            }
-
-            else{
-
-                counter.innerText = count;
-
-            }
-
-            if(count < target){
-
-                requestAnimationFrame(updateCounter);
-
-            }
-
+            return;
         }
 
-        updateCounter();
 
-    });
+        // ==========================================
+        // PATIENTS
+        // ==========================================
 
-    //----------------------------------
-    // Search Box
-    //----------------------------------
+        updateDashboardValue(
+            "totalPatients",
+            data.patients
+        );
 
-    const search = document.querySelector(".header-right input");
 
-    if(search){
+        // ==========================================
+        // DOCTORS
+        // ==========================================
 
-        search.addEventListener("keyup",function(){
+        updateDashboardValue(
+            "totalDoctors",
+            data.doctors
+        );
 
-            console.log("Searching : " + this.value);
 
-        });
+        // ==========================================
+        // NURSES
+        // ==========================================
+
+        updateDashboardValue(
+            "totalNurses",
+            data.nurses
+        );
+
+
+        // ==========================================
+        // AVAILABLE BEDS
+        // ==========================================
+
+        updateDashboardValue(
+            "availableBeds",
+            data.available_beds
+        );
+
+
+        // ==========================================
+        // ADMISSIONS
+        // ==========================================
+
+        updateDashboardValue(
+            "totalAdmissions",
+            data.admissions
+        );
+
+
+        // ==========================================
+        // DISCHARGES
+        // ==========================================
+
+        updateDashboardValue(
+            "totalDischarges",
+            data.discharges
+        );
+
+
+        // ==========================================
+        // MEDICINE STOCK
+        // ==========================================
+
+        updateDashboardValue(
+            "medicineStock",
+            data.medicine_stock
+        );
+
+// ==========================================
+// RECENT ADMISSIONS
+// ==========================================
+
+        loadRecentAdmissions(data);
+        updateDiseaseChart(data);
+        updateMonthlyPatientsChart(data);
+        console.log(
+            "Dashboard data loaded successfully:",
+            data
+        );
 
     }
 
-    //----------------------------------
-    // Notification Bell
-    //----------------------------------
+    catch (error) {
 
-    const bell = document.querySelector(".fa-bell");
-
-    if(bell){
-
-        bell.addEventListener("click",function(){
-
-            alert("No New Notifications");
-
-        });
+        console.error(
+            "Failed to load dashboard data:",
+            error
+        );
 
     }
 
-    //----------------------------------
-    // Mail Icon
-    //----------------------------------
+}
 
-    const mail = document.querySelector(".fa-envelope");
+// ==========================================
+// DISEASE DISTRIBUTION CHART
+// ==========================================
 
-    if(mail){
+function updateDiseaseChart(data) {
 
-        mail.addEventListener("click",function(){
+    if (!pieChart) {
+        return;
+    }
 
-            alert("Inbox is Empty");
+    const diseases =
+        data.disease_distribution || [];
 
-        });
+    if (diseases.length === 0) {
+        return;
+    }
+
+    pieChart.data.labels =
+        diseases.map(item => item.Disease);
+
+    pieChart.data.datasets[0].data =
+        diseases.map(item => item.total);
+
+    pieChart.update();
+}
+
+// ==========================================
+// UPDATE DASHBOARD VALUE
+// ==========================================
+
+function updateDashboardValue(
+    elementId,
+    value
+) {
+
+    const element =
+        document.getElementById(elementId);
+
+
+    if (!element) {
+
+        console.warn(
+            `Dashboard element not found: ${elementId}`
+        );
+
+        return;
+    }
+
+
+    element.textContent =
+        Number(value || 0).toLocaleString("en-IN");
+
+}
+
+// ==========================================
+// RECENT ADMISSIONS
+// ==========================================
+
+function loadRecentAdmissions(data) {
+
+    const table =
+        document.getElementById("recentAdmissionsTable");
+
+    if (!table) {
+        return;
+    }
+
+    table.innerHTML = "";
+
+    const admissions = data.recent_admissions || [];
+
+    if (admissions.length === 0) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="6"
+                    style="text-align:center;padding:30px;">
+                    No Recent Admissions
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    admissions.forEach(patient => {
+
+        let statusClass = "blue";
+
+        if (patient.PatientStatus === "Admitted") {
+            statusClass = "green";
+        }
+        else if (patient.PatientStatus === "Critical") {
+            statusClass = "red";
+        }
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${patient.PatientID || "-"}</td>
+
+            <td>${patient.PatientName || "-"}</td>
+
+            <td>${patient.DoctorAssigned || "-"}</td>
+
+            <td>${patient.Ward || "-"}</td>
+
+            <td>
+                <span class="${statusClass}">
+                    ${patient.PatientStatus || "-"}
+                </span>
+            </td>
+
+            <td>
+                <a href="/patients-page">
+                    <button class="table-btn">
+                        View
+                    </button>
+                </a>
+            </td>
+        `;
+
+        table.appendChild(row);
+
+    });
+}
+
+// ==========================================
+// SEARCH BOX
+// ==========================================
+
+function setupSearch() {
+
+    const search =
+        document.querySelector(
+            ".header-right input"
+        );
+
+
+    if (!search) {
+        return;
+    }
+
+
+    search.addEventListener(
+        "keyup",
+        function () {
+
+            console.log(
+                "Searching:",
+                this.value
+            );
+
+        }
+    );
+
+}
+
+
+// ==========================================
+// NOTIFICATION BELL
+// ==========================================
+
+function setupNotifications() {
+
+    const bell =
+        document.querySelector(".fa-bell");
+
+
+    if (bell) {
+
+        bell.addEventListener(
+            "click",
+            function () {
+
+                alert(
+                    "No New Notifications"
+                );
+
+            }
+        );
 
     }
 
-    //----------------------------------
-    // Sidebar Active Menu
-    //----------------------------------
 
-    const menu = document.querySelectorAll(".sidebar ul li");
+    const mail =
+        document.querySelector(".fa-envelope");
 
-    menu.forEach(item=>{
 
-        item.addEventListener("click",function(){
+    if (mail) {
 
-            menu.forEach(i=>{
+        mail.addEventListener(
+            "click",
+            function () {
 
-                i.classList.remove("active");
+                alert(
+                    "Inbox is Empty"
+                );
 
-            });
+            }
+        );
 
-            this.classList.add("active");
+    }
 
-        });
+}
 
-    });
 
-    //----------------------------------
-    // Card Hover Effect
-    //----------------------------------
+// ==========================================
+// SIDEBAR ACTIVE MENU
+// ==========================================
 
-    document.querySelectorAll(".card").forEach(card=>{
+function setupSidebar() {
 
-        card.addEventListener("mouseenter",()=>{
+    const menu =
+        document.querySelectorAll(
+            ".sidebar ul li"
+        );
 
-            card.style.transform="translateY(-8px)";
 
-        });
+    menu.forEach(item => {
 
-        card.addEventListener("mouseleave",()=>{
+        item.addEventListener(
+            "click",
+            function () {
 
-            card.style.transform="translateY(0px)";
+                menu.forEach(i => {
 
-        });
+                    i.classList.remove(
+                        "active"
+                    );
 
-    });
+                });
 
-    //----------------------------------
-    // Quick Actions
-    //----------------------------------
 
-    document.querySelectorAll(".action").forEach(action=>{
+                this.classList.add(
+                    "active"
+                );
 
-        action.addEventListener("mouseenter",()=>{
-
-            action.style.transform="translateY(-8px)";
-
-        });
-
-        action.addEventListener("mouseleave",()=>{
-
-            action.style.transform="translateY(0px)";
-
-        });
+            }
+        );
 
     });
-        //----------------------------------
-    // Line Chart
-    //----------------------------------
 
-    const lineCanvas = document.getElementById("lineChart");
+}
 
-    if(lineCanvas){
 
-        new Chart(lineCanvas,{
+// ==========================================
+// CARD HOVER EFFECT
+// ==========================================
 
-            type:"line",
+function setupCardHover() {
 
-            data:{
+    document
+        .querySelectorAll(".card")
+        .forEach(card => {
 
-                labels:[
-                    "Jan","Feb","Mar","Apr","May","Jun","Jul"
-                ],
+            card.addEventListener(
+                "mouseenter",
+                () => {
 
-                datasets:[{
+                    card.style.transform =
+                        "translateY(-8px)";
 
-                    label:"Patients",
+                }
+            );
 
-                    data:[120,150,180,170,220,250,290],
 
-                    borderColor:"#2563eb",
+            card.addEventListener(
+                "mouseleave",
+                () => {
 
-                    backgroundColor:"rgba(37,99,235,.15)",
+                    card.style.transform =
+                        "translateY(0px)";
 
-                    fill:true,
+                }
+            );
 
-                    tension:.4,
+        });
 
-                    borderWidth:3,
+}
 
-                    pointRadius:5,
 
-                    pointBackgroundColor:"#2563eb"
+// ==========================================
+// QUICK ACTION HOVER
+// ==========================================
 
-                }]
+function setupQuickActions() {
+
+    document
+        .querySelectorAll(".action")
+        .forEach(action => {
+
+            action.addEventListener(
+                "mouseenter",
+                () => {
+
+                    action.style.transform =
+                        "translateY(-8px)";
+
+                }
+            );
+
+
+            action.addEventListener(
+                "mouseleave",
+                () => {
+
+                    action.style.transform =
+                        "translateY(0px)";
+
+                }
+            );
+
+        });
+
+}
+
+
+// ==========================================
+// LINE CHART
+// ==========================================
+
+function createLineChart() {
+
+    const lineCanvas =
+        document.getElementById("lineChart");
+
+    if (!lineCanvas) {
+        return;
+    }
+
+    if (lineChart) {
+        lineChart.destroy();
+    }
+
+    lineChart = new Chart(
+        lineCanvas,
+        {
+
+            type: "line",
+
+            data: {
+
+                labels: [],
+
+                datasets: [
+
+                    {
+
+                        label: "Patients",
+
+                        data: [],
+
+                        fill: false,
+
+                        tension: 0.4,
+
+                        borderWidth: 3,
+
+                        pointRadius: 4
+
+                    }
+
+                ]
 
             },
 
-            options:{
+            options: {
 
-                responsive:true,
+                responsive: true,
 
-                maintainAspectRatio:false,
+                maintainAspectRatio: false,
 
-                plugins:{
+                plugins: {
 
-                    legend:{
+                    legend: {
+                        display: true
+                    }
 
-                        display:true
+                },
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+                            precision: 0
+                        }
 
                     }
 
@@ -230,57 +527,124 @@ document.addEventListener("DOMContentLoaded", function () {
 
             }
 
-        });
+        }
+    );
 
+}
+
+// ==========================================
+// UPDATE MONTHLY PATIENTS CHART
+// ==========================================
+
+function updateMonthlyPatientsChart(data) {
+
+    if (!lineChart) {
+        return;
     }
 
-    //----------------------------------
-    // Pie Chart
-    //----------------------------------
+    const monthlyPatients =
+        data.monthly_patients || [];
 
-    const pieCanvas=document.getElementById("pieChart");
+    if (monthlyPatients.length === 0) {
+        return;
+    }
 
-    if(pieCanvas){
+    lineChart.data.labels =
+        monthlyPatients.map(item => {
 
-        new Chart(pieCanvas,{
+            const parts =
+                item.month.split("-");
 
-            type:"pie",
+            const year = parts[0];
 
-            data:{
+            const month = parts[1];
 
-                labels:[
-                    "Cardiology",
-                    "Neurology",
-                    "Orthopedic",
-                    "ICU",
-                    "General"
-                ],
+            const date =
+                new Date(
+                    Number(year),
+                    Number(month) - 1
+                );
 
-                datasets:[{
+            return date.toLocaleString(
+                "en-US",
+                {
+                    month: "short",
+                    year: "numeric"
+                }
+            );
 
-                    data:[25,18,15,12,30],
+        });
 
-                    backgroundColor:[
-                        "#2563eb",
-                        "#16a34a",
-                        "#db2777",
-                        "#ea580c",
-                        "#7c3aed"
-                    ]
+    lineChart.data.datasets[0].data =
+        monthlyPatients.map(
+            item => item.total
+        );
 
-                }]
+    lineChart.update();
+
+}
+
+// ==========================================
+// PIE CHART
+// ==========================================
+
+function createPieChart() {
+
+    const pieCanvas =
+        document.getElementById("pieChart");
+
+    if (!pieCanvas) {
+        return;
+    }
+
+    if (pieChart) {
+        pieChart.destroy();
+    }
+
+    pieChart = new Chart(
+        pieCanvas,
+        {
+
+            type: "pie",
+
+            data: {
+
+                labels: [],
+
+                datasets: [
+
+                    {
+
+                        data: [],
+
+                        backgroundColor: [
+                            "#2563eb",
+                            "#16a34a",
+                            "#db2777",
+                            "#ea580c",
+                            "#7c3aed",
+                            "#0891b2",
+                            "#ca8a04",
+                            "#dc2626",
+                            "#4f46e5",
+                            "#059669"
+                        ]
+
+                    }
+
+                ]
 
             },
 
-            options:{
+            options: {
 
-                responsive:true,
+                responsive: true,
 
-                plugins:{
+                plugins: {
 
-                    legend:{
+                    legend: {
 
-                        position:"bottom"
+                        position: "bottom"
 
                     }
 
@@ -288,217 +652,458 @@ document.addEventListener("DOMContentLoaded", function () {
 
             }
 
-        });
+        }
+    );
 
+}
+
+// ==========================================
+// UPDATE DISEASE CHART
+// ==========================================
+
+function updateDiseaseChart(data) {
+
+    if (!pieChart) {
+        return;
     }
 
-    //----------------------------------
-    // View Buttons
-    //----------------------------------
+    const diseases =
+        data.disease_distribution || [];
 
-    document.querySelectorAll(".table-btn").forEach(button=>{
+    if (diseases.length === 0) {
+        return;
+    }
 
-        button.addEventListener("mouseenter",()=>{
+    pieChart.data.labels =
+        diseases.map(
+            item => item.Disease
+        );
 
-            button.style.transform="translateY(-2px)";
+    pieChart.data.datasets[0].data =
+        diseases.map(
+            item => item.total
+        );
 
-        });
+    pieChart.update();
 
-        button.addEventListener("mouseleave",()=>{
+}
 
-            button.style.transform="translateY(0px)";
 
-        });
+// ==========================================
+// VIEW BUTTON HOVER
+// ==========================================
 
-    });
+function setupTableButtons() {
 
-    //----------------------------------
-    // View All Buttons
-    //----------------------------------
+    document
+        .querySelectorAll(".table-btn")
+        .forEach(button => {
 
-    document.querySelectorAll(".view-all-btn").forEach(button=>{
+            button.addEventListener(
+                "mouseenter",
+                () => {
 
-        button.addEventListener("mouseenter",()=>{
+                    button.style.transform =
+                        "translateY(-2px)";
 
-            button.style.opacity=".8";
+                }
+            );
 
-        });
 
-        button.addEventListener("mouseleave",()=>{
+            button.addEventListener(
+                "mouseleave",
+                () => {
 
-            button.style.opacity="1";
+                    button.style.transform =
+                        "translateY(0px)";
 
-        });
-
-    });
-
-    //----------------------------------
-    // Notification Animation
-    //----------------------------------
-
-    document.querySelectorAll(".note").forEach((note,index)=>{
-
-        note.style.opacity="0";
-
-        note.style.transform="translateX(-30px)";
-
-        setTimeout(()=>{
-
-            note.style.transition=".5s";
-
-            note.style.opacity="1";
-
-            note.style.transform="translateX(0px)";
-
-        },index*120);
-
-    });
-
-    //----------------------------------
-    // Table Hover
-    //----------------------------------
-
-    document.querySelectorAll(".table-box tbody tr").forEach(row=>{
-
-        row.addEventListener("mouseenter",()=>{
-
-            row.style.background="#eef4ff";
+                }
+            );
 
         });
 
-        row.addEventListener("mouseleave",()=>{
+}
 
-            row.style.background="";
 
-        });
+// ==========================================
+// VIEW ALL BUTTONS
+// ==========================================
 
-    });
-        //----------------------------------
-    // Prediction Cards Animation
-    //----------------------------------
+function setupViewAllButtons() {
 
-    document.querySelectorAll(".prediction-card").forEach(card=>{
+    document
+        .querySelectorAll(".view-all-btn")
+        .forEach(button => {
 
-        card.addEventListener("mouseenter",()=>{
+            button.addEventListener(
+                "mouseenter",
+                () => {
 
-            card.style.transform="translateY(-8px)";
+                    button.style.opacity = "0.8";
 
-        });
+                }
+            );
 
-        card.addEventListener("mouseleave",()=>{
 
-            card.style.transform="translateY(0px)";
+            button.addEventListener(
+                "mouseleave",
+                () => {
 
-        });
+                    button.style.opacity = "1";
 
-    });
-
-    //----------------------------------
-    // Graph Hover Effect
-    //----------------------------------
-
-    document.querySelectorAll(".graph").forEach(graph=>{
-
-        graph.addEventListener("mouseenter",()=>{
-
-            graph.style.transform="translateY(-6px)";
+                }
+            );
 
         });
 
-        graph.addEventListener("mouseleave",()=>{
+}
 
-            graph.style.transform="translateY(0px)";
+
+// ==========================================
+// NOTIFICATION ANIMATION
+// ==========================================
+
+function setupNotificationAnimation() {
+
+    document
+        .querySelectorAll(".note")
+        .forEach((note, index) => {
+
+            note.style.opacity = "0";
+
+            note.style.transform =
+                "translateX(-30px)";
+
+
+            setTimeout(() => {
+
+                note.style.transition = "0.5s";
+
+                note.style.opacity = "1";
+
+                note.style.transform =
+                    "translateX(0px)";
+
+            }, index * 120);
 
         });
 
-    });
+}
 
-    //----------------------------------
-    // Live Clock
-    //----------------------------------
 
-    function updateClock(){
+// ==========================================
+// TABLE HOVER
+// ==========================================
 
-        const clock=document.getElementById("clock");
+function setupTableHover() {
 
-        if(clock){
+    document
+        .querySelectorAll(
+            ".table-box tbody tr"
+        )
+        .forEach(row => {
 
-            const now=new Date();
+            row.addEventListener(
+                "mouseenter",
+                () => {
 
-            clock.innerHTML=now.toLocaleTimeString();
+                    row.style.background =
+                        "#eef4ff";
+
+                }
+            );
+
+
+            row.addEventListener(
+                "mouseleave",
+                () => {
+
+                    row.style.background = "";
+
+                }
+            );
+
+        });
+
+}
+
+
+// ==========================================
+// PREDICTION CARD ANIMATION
+// ==========================================
+
+function setupPredictionCards() {
+
+    document
+        .querySelectorAll(".prediction-card")
+        .forEach(card => {
+
+            card.addEventListener(
+                "mouseenter",
+                () => {
+
+                    card.style.transform =
+                        "translateY(-8px)";
+
+                }
+            );
+
+
+            card.addEventListener(
+                "mouseleave",
+                () => {
+
+                    card.style.transform =
+                        "translateY(0px)";
+
+                }
+            );
+
+        });
+
+}
+
+
+// ==========================================
+// GRAPH HOVER
+// ==========================================
+
+function setupGraphHover() {
+
+    document
+        .querySelectorAll(".graph")
+        .forEach(graph => {
+
+            graph.addEventListener(
+                "mouseenter",
+                () => {
+
+                    graph.style.transform =
+                        "translateY(-6px)";
+
+                }
+            );
+
+
+            graph.addEventListener(
+                "mouseleave",
+                () => {
+
+                    graph.style.transform =
+                        "translateY(0px)";
+
+                }
+            );
+
+        });
+
+}
+
+
+// ==========================================
+// LIVE CLOCK
+// ==========================================
+
+function setupClock() {
+
+    function updateClock() {
+
+        const clock =
+            document.getElementById("clock");
+
+
+        if (clock) {
+
+            const now = new Date();
+
+            clock.innerHTML =
+                now.toLocaleTimeString();
 
         }
 
     }
+
 
     updateClock();
 
-    setInterval(updateClock,1000);
+    setInterval(
+        updateClock,
+        1000
+    );
 
-    //----------------------------------
-    // Dashboard Fade Animation
-    //----------------------------------
+}
 
-    document.querySelectorAll(".card,.action,.prediction-card,.graph,.table-box,.notifications").forEach((item,index)=>{
 
-        item.style.opacity="0";
+// ==========================================
+// DASHBOARD FADE ANIMATION
+// ==========================================
 
-        item.style.transform="translateY(25px)";
+function setupFadeAnimation() {
 
-        setTimeout(()=>{
+    document
+        .querySelectorAll(
+            ".card,.action,.prediction-card,.graph,.table-box,.notifications"
+        )
+        .forEach((item, index) => {
 
-            item.style.transition=".5s";
+            item.style.opacity = "0";
 
-            item.style.opacity="1";
+            item.style.transform =
+                "translateY(25px)";
 
-            item.style.transform="translateY(0px)";
 
-        },index*80);
+            setTimeout(() => {
 
-    });
+                item.style.transition =
+                    "0.5s";
 
-    //----------------------------------
-    // Ctrl + F Shortcut
-    //----------------------------------
+                item.style.opacity = "1";
 
-    document.addEventListener("keydown",function(e){
+                item.style.transform =
+                    "translateY(0px)";
 
-        if(e.ctrlKey && e.key.toLowerCase()==="f"){
+            }, index * 80);
 
-            e.preventDefault();
+        });
 
-            const search=document.querySelector(".header-right input");
+}
 
-            if(search){
 
-                search.focus();
+// ==========================================
+// CTRL + F SEARCH SHORTCUT
+// ==========================================
+
+function setupSearchShortcut() {
+
+    document.addEventListener(
+        "keydown",
+        function (e) {
+
+            if (
+                e.ctrlKey &&
+                e.key.toLowerCase() === "f"
+            ) {
+
+                e.preventDefault();
+
+
+                const search =
+                    document.querySelector(
+                        ".header-right input"
+                    );
+
+
+                if (search) {
+
+                    search.focus();
+
+                }
 
             }
 
         }
+    );
 
-    });
+}
 
-    //----------------------------------
-    // Auto Refresh Demo
-    //----------------------------------
 
-    setInterval(()=>{
+// ==========================================
+// INITIALIZE DASHBOARD
+// ==========================================
 
-        console.log("Dashboard Auto Refresh : " + new Date().toLocaleTimeString());
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
-    },60000);
+        console.log(
+            "================================"
+        );
 
-    //----------------------------------
-    // Welcome Message
-    //----------------------------------
+        console.log(
+            "Hospital Hospitality Management"
+        );
 
-    console.log("================================");
+        console.log(
+            "Dashboard Loaded Successfully"
+        );
 
-    console.log("Hospital Hospitality Management");
+        console.log(
+            "================================"
+        );
 
-    console.log("Dashboard Loaded Successfully");
 
-    console.log("================================");
+        // Load real database data
 
-});
+        loadDashboardData();
+
+
+        // UI functions
+
+        setupSearch();
+
+        setupNotifications();
+
+        setupSidebar();
+
+        setupCardHover();
+
+        setupQuickActions();
+
+        setupTableButtons();
+
+        setupViewAllButtons();
+
+        setupNotificationAnimation();
+
+        setupTableHover();
+
+        setupPredictionCards();
+
+        setupGraphHover();
+
+        setupClock();
+
+        setupFadeAnimation();
+
+        setupSearchShortcut();
+
+
+        // Charts
+
+        createLineChart();
+
+        createPieChart();
+
+    }
+);
+
+
+// ==========================================
+// AUTO REFRESH DATABASE DATA
+// ==========================================
+
+setInterval(
+    function () {
+
+        loadDashboardData();
+
+    },
+    10000
+);
+
+
+// ==========================================
+// DASHBOARD AUTO REFRESH LOG
+// ==========================================
+
+setInterval(
+    function () {
+
+        console.log(
+            "Dashboard Auto Refresh:",
+            new Date().toLocaleTimeString()
+        );
+
+    },
+    60000
+);

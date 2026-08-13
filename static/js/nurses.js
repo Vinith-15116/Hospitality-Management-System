@@ -62,91 +62,103 @@ function init(){
     applyFilters();
 
 }
+
 // ======================================================
-// LOAD NURSES
+// LOAD NURSES FROM DATABASE
 // ======================================================
 
-function loadNurses(){
+async function loadNurses(){
 
-    const data = localStorage.getItem(STORAGE_KEY);
+    try {
 
-    if(data){
+        const response =
+            await fetch("/api/nurses");
 
-        nurses = JSON.parse(data);
+        const data =
+            await response.json();
+
+        console.log(
+            "NURSES FROM DATABASE:",
+            data
+        );
+
+        if (!response.ok || !data.success) {
+
+            throw new Error(
+                data.error ||
+                "Failed to load nurses"
+            );
+
+        }
+
+        nurses = data.nurses.map(nurse => ({
+
+            id: nurse.NRID,
+
+            name: nurse.Name,
+
+            department:
+                nurse.Department,
+
+            qualification:
+                nurse.Qualification,
+
+            experience:
+                nurse.Experience,
+
+            phone:
+                nurse.Phone,
+
+            shift:
+                nurse.Shift,
+
+            status:
+                nurse.Status,
+
+            ward:
+                nurse.Ward,
+
+           patientCount:
+    nurse.PatientCount || 0,
+
+patientNames:
+    nurse.PatientNames
+        ? nurse.PatientNames.split("||")
+        : []
+
+        }));
+
+
+        filteredNurses =
+            [...nurses];
+
+
+        console.log(
+            "NURSES LOADED:",
+            nurses.length
+        );
+
+
+        currentPage = 1;
+
+        render();
 
     }
 
-    else{
+    catch(error){
 
-        nurses = [
+        console.error(
+            "NURSE DATABASE ERROR:",
+            error
+        );
 
-            {
+        nurses = [];
 
-                id:1,
+        filteredNurses = [];
 
-                name:"Anita Reddy",
-
-                age:29,
-
-                gender:"Female",
-
-                department:"ICU",
-
-                qualification:"B.Sc Nursing",
-
-                experience:6,
-
-                phone:"9876543210",
-
-                email:"anita@gmail.com",
-
-                shift:"Morning",
-
-                status:"On Duty",
-
-                ward:"ICU",
-
-                joiningDate:"2023-02-14"
-
-            },
-
-            {
-
-                id:2,
-
-                name:"Rohit Kumar",
-
-                age:31,
-
-                gender:"Male",
-
-                department:"Emergency",
-
-                qualification:"GNM",
-
-                experience:8,
-
-                phone:"9123456789",
-
-                email:"rohit@gmail.com",
-
-                shift:"Night",
-
-                status:"Off Duty",
-
-                ward:"Emergency",
-
-                joiningDate:"2022-08-10"
-
-            }
-
-        ];
-
-        saveNurses();
+        render();
 
     }
-
-    filteredNurses = [...nurses];
 
 }
 
@@ -289,33 +301,35 @@ function render(){
 
 function renderDashboard(){
 
+    // Total nurses
     totalNurses.innerText = nurses.length;
 
+
+    // Active nurses = On Duty
     onDutyNurses.innerText =
-
         nurses.filter(
-
-            nurse => nurse.status === "On Duty"
-
+            nurse =>
+                String(nurse.status).toLowerCase() === "active"
         ).length;
 
+
+    // Non-active nurses = Off Duty
     offDutyNurses.innerText =
-
         nurses.filter(
-
-            nurse => nurse.status === "Off Duty"
-
+            nurse =>
+                String(nurse.status).toLowerCase() !== "active"
         ).length;
 
+
+    // ICU nurses
     icuNurses.innerText =
-
         nurses.filter(
-
-            nurse => nurse.department === "ICU"
-
+            nurse =>
+                String(nurse.department).toLowerCase() === "icu"
         ).length;
 
 }
+
 // ======================================================
 // RENDER TABLE
 // ======================================================
@@ -330,13 +344,19 @@ function renderTable(){
 
     const pageNurses = filteredNurses.slice(start, end);
 
+
+    // ============================================
+    // NO NURSES
+    // ============================================
+
     if(pageNurses.length === 0){
 
         nurseTable.innerHTML = `
 
         <tr>
 
-            <td colspan="8" style="text-align:center;padding:30px;">
+            <td colspan="10"
+                style="text-align:center;padding:30px;">
 
                 No Nurses Found
 
@@ -347,66 +367,133 @@ function renderTable(){
         `;
 
         return;
-
     }
 
-    pageNurses.forEach(nurse=>{
+
+    // ============================================
+    // DISPLAY NURSES
+    // ============================================
+
+    pageNurses.forEach(nurse => {
 
         const index = nurses.indexOf(nurse);
 
         const row = document.createElement("tr");
 
+
+        // ========================================
+        // PATIENT NAMES
+        // ========================================
+
+        let patientHTML = "";
+
+        if(
+            nurse.patientNames &&
+            nurse.patientNames.length > 0
+        ){
+
+            patientHTML =
+                nurse.patientNames.map(
+                    patient => `
+                        <div class="patient-name">
+                            ${patient}
+                        </div>
+                    `
+                ).join("");
+
+        } else {
+
+            patientHTML = `
+                <span class="no-patient">
+                    No patients
+                </span>
+            `;
+
+        }
+
+
+        // ========================================
+        // ROW
+        // ========================================
+
         row.innerHTML = `
 
-        <td>${nurse.id}</td>
+            <td>
+                ${nurse.id}
+            </td>
 
-        <td>${nurse.name}</td>
+            <td>
+                ${nurse.name}
+            </td>
 
-        <td>${nurse.department}</td>
+            <td>
+                ${nurse.department}
+            </td>
 
-        <td>${nurse.qualification}</td>
+            <td>
+                ${nurse.ward || "-"}
+            </td>
 
-        <td>${nurse.experience} Years</td>
+            <td>
+                ${nurse.qualification}
+            </td>
 
-        <td>${nurse.shift}</td>
+            <td>
+                ${nurse.experience} Years
+            </td>
 
-        <td>${getStatusBadge(nurse.status)}</td>
+            <td>
+                ${nurse.shift}
+            </td>
 
-        <td>
+            <td>
+                ${getStatusBadge(nurse.status)}
+            </td>
 
-            <button
 
-            class="view-btn"
+            <!-- PATIENTS -->
 
-            onclick="viewNurse(${index})">
+            <td class="patient-list">
 
-            <i class="fa-solid fa-eye"></i>
+                ${patientHTML}
 
-            </button>
+            </td>
 
-            <button
 
-            class="edit-btn"
+            <!-- ACTIONS -->
 
-            onclick="editNurse(${index})">
+            <td>
 
-            <i class="fa-solid fa-pen"></i>
+                <button
+                    class="view-btn"
+                    onclick="viewNurse(${index})">
 
-            </button>
+                    <i class="fa-solid fa-eye"></i>
 
-            <button
+                </button>
 
-            class="delete-btn"
 
-            onclick="deleteNurse(${index})">
+                <button
+                    class="edit-btn"
+                    onclick="editNurse(${index})">
 
-            <i class="fa-solid fa-trash"></i>
+                    <i class="fa-solid fa-pen"></i>
 
-            </button>
+                </button>
 
-        </td>
+
+                <button
+                    class="delete-btn"
+                    onclick="deleteNurse(${index})">
+
+                    <i class="fa-solid fa-trash"></i>
+
+                </button>
+
+            </td>
 
         `;
+
 
         nurseTable.appendChild(row);
 
@@ -427,7 +514,7 @@ function getStatusBadge(status){
 
             <span class="onduty">
 
-            On Duty
+            Active
 
             </span>
 
@@ -439,7 +526,7 @@ function getStatusBadge(status){
 
             <span class="offduty">
 
-            Off Duty
+            on Leave
 
             </span>
 
@@ -502,7 +589,7 @@ function clearForm(){
 
     document.getElementById("nurseShift").value = "Morning";
 
-    document.getElementById("nurseStatus").value = "On Duty";
+    document.getElementById("nurseStatus").value = "Active";
 
     document.getElementById("nurseWard").value = "";
 

@@ -8,7 +8,7 @@
 
     <title>Hospital Hospitality Management System</title>
 
-    <link rel="stylesheet" href="../static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -38,93 +38,72 @@
 <ul>
 
 <li class="active">
-<a href="dashboard.html">
+<a href="/">
 <i class="fa-solid fa-house"></i>
 <span>Dashboard</span>
 </a>
 </li>
 
 <li>
-<a href="patients.html">
+<a href="/patients-page">
 <i class="fa-solid fa-user-injured"></i>
 <span>Patients</span>
 </a>
 </li>
 
 <li>
-<a href="doctors.html">
+<a href="/doctors-page">
 <i class="fa-solid fa-user-doctor"></i>
 <span>Doctors</span>
 </a>
 </li>
 
 <li>
-<a href="nurses.html">
+<a href="/nurses-page">
 <i class="fa-solid fa-user-nurse"></i>
 <span>Nurses</span>
 </a>
 </li>
 
 <li>
-<a href="beds.html">
+<a href="/beds-page">
 <i class="fa-solid fa-bed"></i>
 <span>Beds</span>
 </a>
 </li>
 
 <li>
-<a href="pharmacy.html">
+<a href="/pharmacy-page">
 <i class="fa-solid fa-pills"></i>
 <span>Pharmacy</span>
 </a>
 </li>
 
 <li>
-<a href="prediction.html">
+<a href="/prediction-page">
 <i class="fa-solid fa-brain"></i>
 <span>AI Prediction</span>
 </a>
 </li>
 
 <li>
-<a href="analytics.html">
+<a href="/analytics-page">
 <i class="fa-solid fa-chart-line"></i>
 <span>Analytics</span>
 </a>
 </li>
 
 <li>
-<a href="reports.html">
+<a href="/reports-page">
 <i class="fa-solid fa-file-lines"></i>
 <span>Reports</span>
 </a>
 </li>
 
 <li>
-<a href="billing.html">
-<i class="fa-solid fa-credit-card"></i>
-<span>Billing</span>
-</a>
-</li>
-
-<li>
-<a href="profile.html">
-<i class="fa-solid fa-user"></i>
-<span>Profile</span>
-</a>
-</li>
-
-<li>
-<a href="settings.html">
-<i class="fa-solid fa-gear"></i>
-<span>Settings</span>
-</a>
-</li>
-
-<li>
-<a href="login.html">
-<i class="fa-solid fa-right-from-bracket"></i>
-<span>Logout</span>
+<a href="/logout">
+    <i class="fa-solid fa-right-from-bracket"></i>
+    <span>Logout</span>
 </a>
 </li>
 
@@ -163,93 +142,88 @@
 
 <section class="cards">
 
-<div class="card">
+    <div class="card">
 
-<i class="fa-solid fa-user-injured"></i>
+        <i class="fa-solid fa-user-injured"></i>
 
-<h3>Patients</h3>
+        <h3>Patients</h3>
 
-<h2>1248</h2>
+        <h2 id="totalPatients">0</h2>
 
-</div>
+    </div>
 
-<div class="card">
 
-<i class="fa-solid fa-user-doctor"></i>
+    <div class="card">
 
-<h3>Doctors</h3>
+        <i class="fa-solid fa-user-doctor"></i>
 
-<h2>84</h2>
+        <h3>Doctors</h3>
 
-</div>
+        <h2 id="totalDoctors">0</h2>
 
-<div class="card">
+    </div>
 
-<i class="fa-solid fa-user-nurse"></i>
 
-<h3>Nurses</h3>
+    <div class="card">
 
-<h2>156</h2>
+        <i class="fa-solid fa-user-nurse"></i>
 
-</div>
+        <h3>Nurses</h3>
 
-<div class="card">
+        <h2 id="totalNurses">0</h2>
 
-<i class="fa-solid fa-bed"></i>
+    </div>
 
-<h3>Available Beds</h3>
 
-<h2>67</h2>
+    <div class="card">
 
-</div>
+        <i class="fa-solid fa-bed"></i>
 
-<div class="card">
+        <h3>Available Beds</h3>
 
-<i class="fa-solid fa-hospital-user"></i>
+        <h2 id="availableBeds">0</h2>
 
-<h3>Admissions</h3>
+    </div>
 
-<h2>39</h2>
 
-</div>
+    <div class="card">
 
-<div class="card">
+        <i class="fa-solid fa-hospital-user"></i>
 
-<i class="fa-solid fa-door-open"></i>
+        <h3>Admissions</h3>
 
-<h3>Discharges</h3>
+        <h2 id="totalAdmissions">0</h2>
 
-<h2>18</h2>
+    </div>
 
-</div>
 
-<div class="card">
+    <div class="card">
 
-<i class="fa-solid fa-capsules"></i>
+        <i class="fa-solid fa-door-open"></i>
 
-<h3>Medicine Stock</h3>
+        <h3>Discharges</h3>
 
-<h2>587</h2>
+        <h2 id="totalDischarges">0</h2>
 
-</div>
+    </div>
 
-<div class="card">
 
-<i class="fa-solid fa-indian-rupee-sign"></i>
+    <div class="card">
 
-<h3>Revenue</h3>
+        <i class="fa-solid fa-capsules"></i>
 
-<h2>₹2.8M</h2>
+        <h3>Medicine Stock</h3>
 
-</div>
+        <h2 id="medicineStock">0</h2>
+
+    </div>
 
 </section>
-
 <!-- ================= QUICK ACTIONS ================= -->
 
 <section class="quick">
 
-<a href="patients.html" class="action">
+<a href="/patients-page" class="action">
 
 <i class="fa-solid fa-user-plus"></i>
 
@@ -257,7 +231,7 @@
 
 </a>
 
-<a href="beds.html" class="action">
+<a href="/beds-page" class="action">
 
 <i class="fa-solid fa-bed"></i>
 
@@ -265,7 +239,7 @@
 
 </a>
 
-<a href="doctors.html" class="action">
+<a href="/doctors-page" class="action">
 
 <i class="fa-solid fa-user-doctor"></i>
 
@@ -273,7 +247,7 @@
 
 </a>
 
-<a href="reports.html" class="action">
+<a href="/reports-page" class="action">
 
 <i class="fa-solid fa-file-medical"></i>
 
@@ -281,19 +255,11 @@
 
 </a>
 
-<a href="pharmacy.html" class="action">
+<a href="/pharmacy-page" class="action">
 
 <i class="fa-solid fa-pills"></i>
 
 <h3>Pharmacy</h3>
-
-</a>
-
-<a href="billing.html" class="action">
-
-<i class="fa-solid fa-credit-card"></i>
-
-<h3>Billing</h3>
 
 </a>
 
@@ -309,7 +275,7 @@
 
 <p>Predict possible disease using ML model.</p>
 
-<a href="prediction.html">
+<a href="/prediction-page">
 
 <button>Open</button>
 
@@ -323,7 +289,7 @@
 
 <p>Forecast medicine requirements.</p>
 
-<a href="prediction.html">
+<a href="/prediction-page">
 
 <button>Open</button>
 
@@ -337,7 +303,7 @@
 
 <p>Estimate hospitalization duration.</p>
 
-<a href="prediction.html">
+<a href="/prediction-page">
 
 <button>Open</button>
 
@@ -376,7 +342,7 @@
 
 <h2>Recent Admissions</h2>
 
-<a href="patients.html" class="view-all-btn">View All</a>
+<a href="/patients-page" class="view-all-btn">View All</a>
 
 </div>
 
@@ -400,153 +366,9 @@
 
 </tr>
 
-</thead>
+<tbody id="recentAdmissionsTable">
 
-<tbody>
-
-<tr>
-
-<td>1001</td>
-
-<td>Rahul Sharma</td>
-
-<td>Dr. Mehta</td>
-
-<td>ICU</td>
-
-<td><span class="green">Admitted</span></td>
-
-<td>
-
-<a href="patients.html">
-
-<button class="table-btn">View</button>
-
-</a>
-
-</td>
-
-</tr>
-
-<tr>
-
-<td>1002</td>
-
-<td>Anjali Gupta</td>
-
-<td>Dr. Singh</td>
-
-<td>General</td>
-
-<td><span class="blue">Recovering</span></td>
-
-<td>
-
-<a href="patients.html">
-
-<button class="table-btn">View</button>
-
-</a>
-
-</td>
-
-</tr>
-
-<tr>
-
-<td>1003</td>
-
-<td>Ramesh Kumar</td>
-
-<td>Dr. Khan</td>
-
-<td>Private</td>
-
-<td><span class="red">Critical</span></td>
-
-<td>
-
-<a href="patients.html">
-
-<button class="table-btn">View</button>
-
-</a>
-
-</td>
-
-</tr>
-
-<tr>
-
-<td>1004</td>
-
-<td>Pooja Patel</td>
-
-<td>Dr. Joseph</td>
-
-<td>ICU</td>
-
-<td><span class="green">Stable</span></td>
-
-<td>
-
-<a href="patients.html">
-
-<button class="table-btn">View</button>
-
-</a>
-
-</td>
-
-</tr>
-
-<tr>
-
-<td>1005</td>
-
-<td>Vikram Reddy</td>
-
-<td>Dr. Kumar</td>
-
-<td>Ward 3</td>
-
-<td><span class="blue">Recovering</span></td>
-
-<td>
-
-<a href="patients.html">
-
-<button class="table-btn">View</button>
-
-</a>
-
-</td>
-
-</tr>
-
-<tr>
-
-<td>1006</td>
-
-<td>Priya Sharma</td>
-
-<td>Dr. Khan</td>
-
-<td>Ward 5</td>
-
-<td><span class="green">Admitted</span></td>
-
-<td>
-
-<a href="patients.html">
-
-<button class="table-btn">View</button>
-
-</a>
-
-</td>
-
-</tr>
+    <!-- Data loaded from database -->
 
 </tbody>
 
@@ -562,7 +384,7 @@
 
 <h2>Notifications</h2>
 
-<a href="reports.html" class="view-all-btn">
+<a href="/reports-page" class="view-all-btn">
 
 View All
 
@@ -673,7 +495,7 @@ Vaccination Drive Starts Tomorrow
 
 <h2>Upcoming Appointments</h2>
 
-<a href="reports.html" class="view-all-btn">
+<a href="/reports-page" class="view-all-btn">
 
 View All
 
@@ -781,7 +603,7 @@ View All
 
 </div>
 
-<script src="../static/js/dashboard.js"></script>
+<script src="/static/js/dashboard.js"></script>
 
 </body>
 

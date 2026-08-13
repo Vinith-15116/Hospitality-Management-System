@@ -11,10 +11,10 @@ content="width=device-width, initial-scale=1.0">
 <title>Patients Management</title>
 
 <link rel="stylesheet"
-href="../static/css/dashboard.css">
+href="/static/css/dashboard.css">
 
 <link rel="stylesheet"
-href="../static/css/patients.css">
+href="/static/css/patients.css">
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
 rel="stylesheet">
@@ -43,75 +43,73 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 <ul>
 
 <li>
-
-<a href="dashboard.html">
-
+<a href="/">
 <i class="fa-solid fa-house"></i>
-
-Dashboard
-
+<span>Dashboard</span>
 </a>
-
 </li>
 
 <li class="active">
-
-<a href="patients.html">
-
+<a href="/patients-page">
 <i class="fa-solid fa-user-injured"></i>
-
-Patients
-
+<span>Patients</span>
 </a>
-
 </li>
 
 <li>
-
-<a href="doctors.html">
-
+<a href="/doctors-page">
 <i class="fa-solid fa-user-doctor"></i>
-
-Doctors
-
+<span>Doctors</span>
 </a>
-
 </li>
 
 <li>
-
-<a href="nurses.html">
-
+<a href="/nurses-page">
 <i class="fa-solid fa-user-nurse"></i>
-
-Nurses
-
+<span>Nurses</span>
 </a>
-
 </li>
 
 <li>
-
-<a href="beds.html">
-
+<a href="/beds-page">
 <i class="fa-solid fa-bed"></i>
-
-Beds
-
+<span>Beds</span>
 </a>
-
 </li>
 
 <li>
-
-<a href="pharmacy.html">
-
+<a href="/pharmacy-page">
 <i class="fa-solid fa-pills"></i>
-
-Pharmacy
-
+<span>Pharmacy</span>
 </a>
+</li>
 
+<li>
+<a href="/prediction-page">
+<i class="fa-solid fa-brain"></i>
+<span>AI Prediction</span>
+</a>
+</li>
+
+<li>
+<a href="/analytics-page">
+<i class="fa-solid fa-chart-line"></i>
+<span>Analytics</span>
+</a>
+</li>
+
+<li>
+<a href="/reports-page">
+<i class="fa-solid fa-file-lines"></i>
+<span>Reports</span>
+</a>
+</li>
+
+<li>
+<a href="/logout">
+    <i class="fa-solid fa-right-from-bracket"></i>
+    <span>Logout</span>
+</a>
 </li>
 
 </ul>
@@ -139,23 +137,49 @@ type="text"
 id="searchPatient"
 placeholder="Search Patient">
 
-<button
-class="add-btn"
-id="openModal">
+<div class="patient-actions">
 
-<i class="fa-solid fa-user-plus"></i>
+    <!-- ADD PATIENT -->
+    <button
+        class="add-btn"
+        id="openModal"
+        type="button">
 
-Add Patient
+        <i class="fa-solid fa-user-plus"></i>
 
-</button>
+        Add Patient
+
+    </button>
+
+
+    <!-- UPLOAD CSV -->
+    <label
+        class="add-btn csv-btn"
+        for="csvUploadInput">
+
+        <i class="fa-solid fa-file-csv"></i>
+
+        Upload CSV
+
+    </label>
+
+    <input
+        type="file"
+        id="csvUploadInput"
+        accept=".csv"
+        hidden>
+
+</div>
 
 </div>
 
 </header>
 
+<p id="uploadStatus" style="padding: 0 20px; color: #555;"></p>
+
 <!-- Statistics -->
 
-<section class="cards">
+<section class="cards" id="statusCards">
 
 <div class="card">
 
@@ -165,60 +189,7 @@ Add Patient
 
 </div>
 
-<div class="card">
-
-<h3>Critical</h3>
-
-<h2 id="criticalPatients">0</h2>
-
-</div>
-
-<div class="card">
-
-<h3>Recovering</h3>
-
-<h2 id="recoveringPatients">0</h2>
-
-</div>
-
-<div class="card">
-
-<h3>Discharged</h3>
-
-<h2 id="dischargedPatients">0</h2>
-
-</div>
-
-</section>
-<!-- ================= FILTER ================= -->
-
-<section class="filter-bar">
-
-<select id="statusFilter">
-
-<option value="All">All Status</option>
-
-<option value="Admitted">Admitted</option>
-
-<option value="Recovering">Recovering</option>
-
-<option value="Critical">Critical</option>
-
-<option value="Discharged">Discharged</option>
-
-</select>
-
-<select id="genderFilter">
-
-<option value="All">All Gender</option>
-
-<option value="Male">Male</option>
-
-<option value="Female">Female</option>
-
-<option value="Other">Other</option>
-
-</select>
+<!-- Status/gender breakdown cards are injected here by patients.js -->
 
 </section>
 
@@ -232,21 +203,7 @@ Add Patient
 
 <tr>
 
-<th>ID</th>
-
-<th>Name</th>
-
-<th>Age</th>
-
-<th>Gender</th>
-
-<th>Disease</th>
-
-<th>Doctor</th>
-
-<th>Status</th>
-
-<th>Actions</th>
+<!-- Column headers are generated dynamically by patients.js -->
 
 </tr>
 
@@ -266,155 +223,229 @@ Add Patient
 
 <div class="modal" id="patientModal">
 
-<div class="modal-content">
+    <div class="modal-content">
 
-<h2 id="modalTitle">Add Patient</h2>
+        <h2 id="modalTitle">Add Patient</h2>
 
-<input type="hidden" id="editIndex">
+        <input type="hidden" id="editIndex">
 
-<!-- Row 1 -->
+        <input
+            type="text"
+            id="patientID"
+            placeholder="Patient ID"
+            readonly>
 
-<input
-type="text"
-id="patientName"
-placeholder="Patient Name">
+        <input
+            type="text"
+            id="patientName"
+            placeholder="Patient Name">
 
-<input
-type="number"
-id="patientAge"
-placeholder="Age">
+        <input
+            type="number"
+            id="patientAge"
+            placeholder="Age">
 
-<select id="patientGender">
+        <select id="patientGender">
+            <option value="">Select Gender</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+        </select>
 
-<option value="">Select Gender</option>
+        <input
+            type="text"
+            id="patientDisease"
+            placeholder="Disease">
 
-<option>Male</option>
+        <input
+            type="text"
+            id="patientAllergies"
+            placeholder="Allergies">
 
-<option>Female</option>
+        <textarea
+            id="patientPreviousDiseases"
+            placeholder="Previous Diseases"
+            rows="2"></textarea>
 
-<option>Other</option>
+        <textarea
+            id="patientLabTestResults"
+            placeholder="Lab Test Results"
+            rows="2"></textarea>
 
+        <input
+            type="date"
+            id="patientAdmissionDate">
+
+        <input
+            type="number"
+            id="patientRoomNumber"
+            placeholder="Room Number">
+
+        <select id="patientBedID">
+    <option value="">Select Bed</option>
 </select>
 
-<select id="patientBloodGroup">
-
-<option value="">Blood Group</option>
-
-<option>A+</option>
-<option>A-</option>
-<option>B+</option>
-<option>B-</option>
-<option>AB+</option>
-<option>AB-</option>
-<option>O+</option>
-<option>O-</option>
-
+        <select id="patientWard">
+    <option value="">Select Ward</option>
 </select>
 
-<!-- Row 2 -->
-
-<input
-type="tel"
-id="patientPhone"
-placeholder="Phone Number">
-
-<input
-type="email"
-id="patientEmail"
-placeholder="Email Address">
-
-<!-- Row 3 -->
-
-<textarea
-id="patientAddress"
-placeholder="Address"
-rows="3"></textarea>
-
-<!-- Row 4 -->
-
-<input
-type="text"
-id="patientDisease"
-placeholder="Disease">
-
-<input
-type="text"
-id="patientDoctor"
-placeholder="Doctor Name">
-
-<!-- Row 5 -->
-
-<select id="patientWard">
-
-<option value="">Ward</option>
-
-<option>General</option>
-
-<option>ICU</option>
-
-<option>Emergency</option>
-
-<option>Private</option>
-
+        <select id="patientNurseID">
+    <option value="">Select Nurse</option>
 </select>
 
-<input
-type="text"
-id="patientBed"
-placeholder="Bed Number">
-
-<!-- Row 6 -->
-
-<select id="patientInsurance">
-
-<option>No</option>
-
-<option>Yes</option>
-
+        <select id="patientDoctor">
+    <option value="">Select Doctor</option>
 </select>
 
-<input
-type="text"
-id="patientEmergency"
-placeholder="Emergency Contact">
+        <input
+            type="text"
+            id="patientMedicineRequired"
+            placeholder="Medicine Required">
 
-<!-- Row 7 -->
+        <input
+            type="text"
+            id="patientMedicineTime"
+            placeholder="Medicine Time">
 
-<input
-type="date"
-id="patientAdmissionDate">
+        <select id="patientStatus">
+            <option>Admitted</option>
+            <option>Under Treatment</option>
+            <option>Recovered</option>
+            <option>Critical</option>
+            <option>Discharged</option>
+        </select>
 
-<select id="patientStatus">
+        <input
+            type="tel"
+            id="patientEmergency"
+            placeholder="Emergency Contact">
 
-<option>Admitted</option>
+        <input
+            type="date"
+            id="patientDischargeDate">
 
-<option>Recovering</option>
+        <input
+            type="number"
+            step="0.1"
+            id="patientTemperature"
+            placeholder="Temperature">
 
-<option>Critical</option>
+        <input
+            type="number"
+            id="patientBloodPressure"
+            placeholder="Blood Pressure">
 
-<option>Discharged</option>
+        <input
+            type="number"
+            id="patientSugarLevel"
+            placeholder="Sugar Level">
 
-</select>
+        <input
+            type="number"
+            id="patientHeartRate"
+            placeholder="Heart Rate">
 
-<div class="modal-buttons">
+        <input
+            type="number"
+            id="patientOxygenLevel"
+            placeholder="Oxygen Level">
 
-<button id="savePatient">
+        <input
+            type="number"
+            id="patientWBCCount"
+            placeholder="WBC Count">
 
-Save Patient
+        <input
+            type="number"
+            id="patientPlateletCount"
+            placeholder="Platelet Count">
 
-</button>
+        <input
+            type="number"
+            step="0.1"
+            id="patientHemoglobin"
+            placeholder="Hemoglobin">
 
-<button id="closeModal">
+        <select id="patientFeverSymptom">
+            <option value="">Fever Symptom</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select>
 
-Cancel
+        <select id="patientCough">
+            <option value="">Cough</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select>
 
-</button>
+        <select id="patientVomiting">
+            <option value="">Vomiting</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select>
+
+        <select id="patientChestPain">
+            <option value="">Chest Pain</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select>
+
+        <select id="patientHeadache">
+            <option value="">Headache</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select>
+
+        <select id="patientShortnessOfBreath">
+            <option value="">Shortness Of Breath</option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select>
+
+        <input
+            type="text"
+            id="patientSeverityLevel"
+            placeholder="Severity Level">
+
+        <input
+            type="number"
+            id="patientMedicineQuantityUsed"
+            placeholder="Medicine Quantity Used">
+
+        <input
+            type="number"
+            id="patientCurrentMedicineStock"
+            placeholder="Current Medicine Stock">
+
+        <input
+            type="text"
+            id="patientSeason"
+            placeholder="Season">
+
+
+        <!-- BUTTONS -->
+
+        <div class="modal-buttons">
+
+            <button
+                id="savePatient"
+                type="button">
+                Save Patient
+            </button>
+
+            <button
+                id="closeModal"
+                type="button">
+                Cancel
+            </button>
+
+        </div>
+
+    </div>
 
 </div>
 
-</div>
 
-</div>
 <!-- ================= VIEW PATIENT MODAL ================= -->
 
 <div class="modal" id="viewModal">
@@ -519,7 +550,7 @@ Next »
 
 </div>
 
-<script src="../static/js/patients.js"></script>
+<script src="/static/js/patients.js"></script>
 
 </body>
 

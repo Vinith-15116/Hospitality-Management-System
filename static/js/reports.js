@@ -1,1089 +1,1003 @@
 // ======================================================
-// Hospital HMS
-// Reports & Analytics Module
+// HOSPITAL HMS
+// REPORTS MODULE
 // ======================================================
 
-// ---------- Local Storage Keys ----------
-
-const PATIENT_KEY = "hospital_patients";
-const DOCTOR_KEY = "hospital_doctors";
-const NURSE_KEY = "hospital_nurses";
-const BED_KEY = "hospital_beds";
-const PHARMACY_KEY = "hospital_pharmacy";
-
-// ---------- Data ----------
-
-let patients = [];
-let doctors = [];
-let nurses = [];
-let beds = [];
-let medicines = [];
-
-// ---------- Charts ----------
-
 let patientChart;
-let doctorChart;
-let nurseChart;
 let bedChart;
 let medicineChart;
-let revenueChart;
+let doctorChart;
+let nurseChart;
 
-// ---------- Dashboard ----------
-
-const totalPatients =
-document.getElementById("totalPatients");
-
-const totalDoctors =
-document.getElementById("totalDoctors");
-
-const totalNurses =
-document.getElementById("totalNurses");
-
-const availableBeds =
-document.getElementById("availableBeds");
-
-const totalMedicines =
-document.getElementById("totalMedicines");
-
-const totalRevenue =
-document.getElementById("totalRevenue");
 
 // ======================================================
 // INITIALIZE
 // ======================================================
 
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded", function () {
 
-function init(){
+    loadReports();
 
-    loadData();
-
-    renderDashboard();
-
-    renderSummary();
-
-    renderCharts();
-
-    registerEvents();
-
-}
-// ======================================================
-// LOAD DATA
-// ======================================================
-
-function loadData(){
-
-    patients = JSON.parse(
-        localStorage.getItem(PATIENT_KEY)
-    ) || [];
-
-    doctors = JSON.parse(
-        localStorage.getItem(DOCTOR_KEY)
-    ) || [];
-
-    nurses = JSON.parse(
-        localStorage.getItem(NURSE_KEY)
-    ) || [];
-
-    beds = JSON.parse(
-        localStorage.getItem(BED_KEY)
-    ) || [];
-
-    medicines = JSON.parse(
-        localStorage.getItem(PHARMACY_KEY)
-    ) || [];
-
-}
-// ======================================================
-// REGISTER EVENTS
-// ======================================================
-
-function registerEvents(){
-
+    // Print
     document.getElementById("printReport")
-    .addEventListener("click",()=>{
+        ?.addEventListener("click", function () {
+            window.print();
+        });
 
-        window.print();
-
-    });
-
+    // Export CSV
     document.getElementById("downloadCSV")
-    .addEventListener("click",exportCSV);
+        ?.addEventListener("click", exportCSV);
 
-    document.getElementById("filterReport")
-    .addEventListener("click",()=>{
+    // Generate Report
+   document.getElementById("filterReport")
+    ?.addEventListener("click", function () {
 
-        alert("Date filtering will be added in the next version.");
-
-    });
-
-}
-// ======================================================
-// DASHBOARD
-// ======================================================
-
-function renderDashboard(){
-
-    totalPatients.innerText = patients.length;
-
-    totalDoctors.innerText = doctors.length;
-
-    totalNurses.innerText = nurses.length;
-
-    totalMedicines.innerText = medicines.length;
-
-    availableBeds.innerText =
-
-    beds.filter(
-
-        bed=>bed.status==="Available"
-
-    ).length;
-
-    calculateRevenue();
-
-}
-// ======================================================
-// REVENUE
-// ======================================================
-
-function calculateRevenue(){
-
-    let revenue = 0;
-
-    beds.forEach(bed=>{
-
-        revenue += Number(bed.charge || 0);
+        loadReports(true);
 
     });
+});
 
-    medicines.forEach(medicine=>{
 
-        revenue += Number(medicine.price || 0);
-
-    });
-
-    totalRevenue.innerText =
-
-    "₹" + revenue.toLocaleString();
-
-}
 // ======================================================
-// SUMMARY TABLE
+// LOAD REPORT DATA
 // ======================================================
 
-function renderSummary(){
+function loadReports(useFilter = false) {
 
-    document.getElementById("summaryPatients").innerText =
-    patients.length;
+    let url = "/api/reports-data";
 
-    document.getElementById("summaryDoctors").innerText =
-    doctors.length;
 
-    document.getElementById("summaryNurses").innerText =
-    nurses.length;
+    if (useFilter) {
 
-    document.getElementById("summaryBeds").innerText =
-    beds.length;
+        const fromDate =
+            document.getElementById("fromDate").value;
 
-    document.getElementById("summaryMedicines").innerText =
-    medicines.length;
+        const toDate =
+            document.getElementById("toDate").value;
 
-    let revenue = 0;
 
-    beds.forEach(bed=>{
+        if (fromDate && toDate) {
 
-        revenue += Number(bed.charge || 0);
+            if (fromDate > toDate) {
 
-    });
+                alert(
+                    "From date cannot be after To date."
+                );
 
-    medicines.forEach(medicine=>{
+                return;
+            }
 
-        revenue += Number(medicine.price || 0);
 
-    });
+            url +=
+                "?from=" +
+                encodeURIComponent(fromDate) +
+                "&to=" +
+                encodeURIComponent(toDate);
 
-    document.getElementById("summaryRevenue").innerText =
-    "₹" + revenue.toLocaleString();
+        }
 
-    renderActivities();
+        else if (fromDate) {
 
-}
-// ======================================================
-// RECENT ACTIVITIES
-// ======================================================
+            url +=
+                "?from=" +
+                encodeURIComponent(fromDate);
 
-function renderActivities(){
+        }
 
-    const tbody =
-    document.getElementById("activityTable");
+        else if (toDate) {
 
-    tbody.innerHTML = "";
+            url +=
+                "?to=" +
+                encodeURIComponent(toDate);
 
-    let activities = [];
-
-    patients.slice(-3).forEach(patient=>{
-
-        activities.push({
-
-            date:new Date().toLocaleDateString(),
-
-            module:"Patients",
-
-            description:"Patient Added : " + patient.name,
-
-            status:"Success"
-
-        });
-
-    });
-
-    doctors.slice(-3).forEach(doctor=>{
-
-        activities.push({
-
-            date:new Date().toLocaleDateString(),
-
-            module:"Doctors",
-
-            description:"Doctor Added : " + doctor.name,
-
-            status:"Success"
-
-        });
-
-    });
-
-    nurses.slice(-3).forEach(nurse=>{
-
-        activities.push({
-
-            date:new Date().toLocaleDateString(),
-
-            module:"Nurses",
-
-            description:"Nurse Added : " + nurse.name,
-
-            status:"Success"
-
-        });
-
-    });
-
-    activities.reverse();
-
-    if(activities.length===0){
-
-        tbody.innerHTML=`
-
-        <tr>
-
-        <td colspan="4"
-
-        style="text-align:center;">
-
-        No Activities
-
-        </td>
-
-        </tr>
-
-        `;
-
-        return;
+        }
 
     }
 
-    activities.forEach(activity=>{
 
-        tbody.innerHTML += `
+    fetch(url)
 
-        <tr>
+        .then(response => response.json())
 
-        <td>${activity.date}</td>
+        .then(data => {
 
-        <td>${activity.module}</td>
+            if (!data.success) {
 
-        <td>${activity.description}</td>
+                console.error(
+                    "Reports API Error:",
+                    data.error
+                );
 
-        <td>${activity.status}</td>
+                return;
+            }
 
-        </tr>
 
-        `;
+            updateCards(data);
 
-    });
+            updateSummary(data);
+
+            renderPatientChart(
+                data.monthly_patients
+            );
+
+            renderBedChart(data);
+
+            renderMedicineChart(data);
+
+            renderDoctorChart(data);
+
+            renderNurseChart(data);
+
+            renderActivities(
+                data.recent_activities
+            );
+
+
+            console.log(
+                "Reports data loaded:",
+                data
+            );
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Reports connection error:",
+                error
+            );
+
+        });
 
 }
+
+// ======================================================
+// UPDATE DASHBOARD CARDS
+// ======================================================
+
+function updateCards(data) {
+
+    document.getElementById(
+        "totalPatients"
+    ).innerText =
+        Number(
+            data.patients || 0
+        ).toLocaleString();
+
+
+    document.getElementById(
+        "totalDoctors"
+    ).innerText =
+        Number(
+            data.doctors || 0
+        ).toLocaleString();
+
+
+    document.getElementById(
+        "totalNurses"
+    ).innerText =
+        Number(
+            data.nurses || 0
+        ).toLocaleString();
+
+
+    document.getElementById(
+        "availableBeds"
+    ).innerText =
+        Number(
+            data.available_beds || 0
+        ).toLocaleString();
+
+
+    document.getElementById(
+        "totalMedicines"
+    ).innerText =
+        Number(
+            data.total_medicines || 0
+        ).toLocaleString();
+
+}
+
+
+// ======================================================
+// UPDATE SUMMARY TABLE
+// ======================================================
+
+function updateSummary(data) {
+
+    document.getElementById(
+        "summaryPatients"
+    ).innerText =
+        Number(
+            data.patients || 0
+        ).toLocaleString();
+
+
+    document.getElementById(
+        "summaryDoctors"
+    ).innerText =
+        Number(
+            data.doctors || 0
+        ).toLocaleString();
+
+
+    document.getElementById(
+        "summaryNurses"
+    ).innerText =
+        Number(
+            data.nurses || 0
+        ).toLocaleString();
+
+
+    document.getElementById(
+        "summaryBeds"
+    ).innerText =
+        Number(
+            data.beds || 0
+        ).toLocaleString();
+
+
+    document.getElementById(
+        "summaryMedicines"
+    ).innerText =
+        Number(
+            data.total_medicines || 0
+        ).toLocaleString();
+
+}
+
+
 // ======================================================
 // MONTHLY PATIENT CHART
 // ======================================================
 
-function renderPatientChart(){
+function renderPatientChart(
+    monthlyPatients
+) {
 
-    const ctx =
-    document.getElementById("patientChart");
+    const canvas =
+        document.getElementById(
+            "patientChart"
+        );
 
-    patientChart = new Chart(ctx,{
 
-        type:"line",
+    if (!canvas) {
+        return;
+    }
 
-        data:{
 
-            labels:[
+    if (patientChart) {
+        patientChart.destroy();
+    }
 
-                "Jan","Feb","Mar",
 
-                "Apr","May","Jun",
+    monthlyPatients =
+        monthlyPatients || [];
 
-                "Jul","Aug","Sep",
 
-                "Oct","Nov","Dec"
+    const labels =
+        monthlyPatients.map(
+            item => formatMonth(
+                item.month
+            )
+        );
 
-            ],
 
-            datasets:[{
+    const values =
+        monthlyPatients.map(
+            item => Number(
+                item.total
+            )
+        );
 
-                label:"Patients",
 
-                data:[
+    patientChart =
+        new Chart(
+            canvas,
+            {
 
-                    12,19,22,25,
+                type: "line",
 
-                    31,36,42,40,
+                data: {
 
-                    38,46,52,60
+                    labels: labels,
 
-                ],
+                    datasets: [{
 
-                borderWidth:3,
+                        label:
+                            "Patients",
 
-                tension:.4,
+                        data: values,
 
-                fill:false
+                        borderWidth: 3,
 
-            }]
+                        tension: 0.4,
 
-        },
+                        fill: false
 
-        options:{
+                    }]
 
-            responsive:true,
+                },
 
-            maintainAspectRatio:false
+                options: {
 
-        }
+                    responsive: true,
 
-    });
+                    maintainAspectRatio: false,
 
-}
-// ======================================================
-// BED OCCUPANCY CHART
-// ======================================================
+                    scales: {
 
-function renderBedChart(){
+                        y: {
 
-    const available =
+                            beginAtZero: true,
 
-    beds.filter(
+                            ticks: {
+                                precision: 0
+                            }
 
-        bed=>bed.status==="Available"
-
-    ).length;
-
-    const occupied =
-
-    beds.filter(
-
-        bed=>bed.status==="Occupied"
-
-    ).length;
-
-    const maintenance =
-
-    beds.filter(
-
-        bed=>bed.status==="Maintenance"
-
-    ).length;
-
-    bedChart = new Chart(
-
-        document.getElementById("bedChart"),
-
-        {
-
-        type:"doughnut",
-
-        data:{
-
-            labels:[
-
-                "Available",
-
-                "Occupied",
-
-                "Maintenance"
-
-            ],
-
-            datasets:[{
-
-                data:[
-
-                    available,
-
-                    occupied,
-
-                    maintenance
-
-                ]
-
-            }]
-
-        },
-
-        options:{
-
-            responsive:true,
-
-            maintainAspectRatio:false
-
-        }
-
-    });
-
-}
-// ======================================================
-// MEDICINE STOCK CHART
-// ======================================================
-
-function renderMedicineChart(){
-
-    const inStock =
-
-    medicines.filter(
-
-        m=>m.status==="In Stock"
-
-    ).length;
-
-    const lowStock =
-
-    medicines.filter(
-
-        m=>m.status==="Low Stock"
-
-    ).length;
-
-    const expired =
-
-    medicines.filter(
-
-        m=>m.status==="Expired"
-
-    ).length;
-
-    medicineChart = new Chart(
-
-        document.getElementById("medicineChart"),
-
-        {
-
-        type:"pie",
-
-        data:{
-
-            labels:[
-
-                "In Stock",
-
-                "Low Stock",
-
-                "Expired"
-
-            ],
-
-            datasets:[{
-
-                data:[
-
-                    inStock,
-
-                    lowStock,
-
-                    expired
-
-                ]
-
-            }]
-
-        },
-
-        options:{
-
-            responsive:true,
-
-            maintainAspectRatio:false
-
-        }
-
-    });
-
-}
-// ======================================================
-// DOCTORS BY DEPARTMENT CHART
-// ======================================================
-
-function renderDoctorChart(){
-
-    const departments = {};
-
-    doctors.forEach(doctor=>{
-
-        const dept = doctor.department || "Unknown";
-
-        departments[dept] = (departments[dept] || 0) + 1;
-
-    });
-
-    doctorChart = new Chart(
-
-        document.getElementById("doctorChart"),
-
-        {
-
-            type:"bar",
-
-            data:{
-
-                labels:Object.keys(departments),
-
-                datasets:[{
-
-                    label:"Doctors",
-
-                    data:Object.values(departments),
-
-                    borderWidth:1
-
-                }]
-
-            },
-
-            options:{
-
-                responsive:true,
-
-                maintainAspectRatio:false,
-
-                plugins:{
-
-                    legend:{
-
-                        display:false
+                        }
 
                     }
 
                 }
 
             }
-
-        }
-
-    );
+        );
 
 }
+
+
 // ======================================================
-// NURSES BY SHIFT CHART
-// ======================================================
-
-function renderNurseChart(){
-
-    const shifts = {};
-
-    nurses.forEach(nurse=>{
-
-        const shift = nurse.shift || "Unknown";
-
-        shifts[shift] = (shifts[shift] || 0) + 1;
-
-    });
-
-    nurseChart = new Chart(
-
-        document.getElementById("nurseChart"),
-
-        {
-
-            type:"polarArea",
-
-            data:{
-
-                labels:Object.keys(shifts),
-
-                datasets:[{
-
-                    data:Object.values(shifts)
-
-                }]
-
-            },
-
-            options:{
-
-                responsive:true,
-
-                maintainAspectRatio:false
-
-            }
-
-        }
-
-    );
-
-}
-// ======================================================
-// REVENUE CHART
+// BED OCCUPANCY CHART
 // ======================================================
 
-function renderRevenueChart(){
+function renderBedChart(data) {
 
-    let medicineRevenue = 0;
+    const canvas =
+        document.getElementById(
+            "bedChart"
+        );
 
-    let bedRevenue = 0;
 
-    medicines.forEach(medicine=>{
+    if (!canvas) {
+        return;
+    }
 
-        medicineRevenue += Number(medicine.price || 0);
 
-    });
+    if (bedChart) {
+        bedChart.destroy();
+    }
 
-    beds.forEach(bed=>{
 
-        bedRevenue += Number(bed.charge || 0);
+    bedChart =
+        new Chart(
+            canvas,
+            {
 
-    });
+                type: "doughnut",
 
-    revenueChart = new Chart(
+                data: {
 
-        document.getElementById("revenueChart"),
+                    labels: [
 
-        {
+                        "Available",
 
-            type:"bar",
+                        "Occupied",
 
-            data:{
-
-                labels:[
-
-                    "Bed Revenue",
-
-                    "Medicine Revenue"
-
-                ],
-
-                datasets:[{
-
-                    label:"Revenue (₹)",
-
-                    data:[
-
-                        bedRevenue,
-
-                        medicineRevenue
+                        "Maintenance"
 
                     ],
 
-                    borderWidth:1
+                    datasets: [{
 
-                }]
+                        data: [
 
-            },
+                            Number(
+                                data.available_beds || 0
+                            ),
 
-            options:{
+                            Number(
+                                data.occupied_beds || 0
+                            ),
 
-                responsive:true,
+                            Number(
+                                data.maintenance_beds || 0
+                            )
 
-                maintainAspectRatio:false
+                        ],
+
+                        borderWidth: 1
+
+                    }]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    plugins: {
+
+                        legend: {
+
+                            position:
+                                "bottom"
+
+                        }
+
+                    }
+
+                }
 
             }
-
-        }
-
-    );
+        );
 
 }
+
+
 // ======================================================
-// RENDER ALL CHARTS
+// MEDICINE STOCK CHART
 // ======================================================
 
-function renderCharts(){
+function renderMedicineChart(data) {
 
-    renderPatientChart();
+    const canvas =
+        document.getElementById(
+            "medicineChart"
+        );
 
-    renderBedChart();
 
-    renderMedicineChart();
+    if (!canvas) {
+        return;
+    }
 
-    renderDoctorChart();
 
-    renderNurseChart();
+    if (medicineChart) {
+        medicineChart.destroy();
+    }
 
-    renderRevenueChart();
+
+    const total =
+        Number(
+            data.total_medicines || 0
+        );
+
+
+    const lowStock =
+        Number(
+            data.low_stock || 0
+        );
+
+
+    const expired =
+        Number(
+            data.expired_medicines || 0
+        );
+
+
+    const inStock =
+        Math.max(
+            total -
+            lowStock -
+            expired,
+            0
+        );
+
+
+    medicineChart =
+        new Chart(
+            canvas,
+            {
+
+                type: "bar",
+
+                data: {
+
+                    labels: [
+
+                        "In Stock",
+
+                        "Low Stock",
+
+                        "Expired"
+
+                    ],
+
+                    datasets: [{
+
+                        label:
+                            "Medicines",
+
+                        data: [
+
+                            inStock,
+
+                            lowStock,
+
+                            expired
+
+                        ],
+
+                        borderWidth: 1
+
+                    }]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            ticks: {
+                                precision: 0
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
 
 }
+
+
 // ======================================================
-// EXPORT REPORT TO CSV
+// DOCTORS BY DEPARTMENT
 // ======================================================
 
-function exportCSV(){
+function renderDoctorChart(data) {
 
-    let csv =
-`Category,Count
-Patients,${patients.length}
-Doctors,${doctors.length}
-Nurses,${nurses.length}
-Beds,${beds.length}
-Medicines,${medicines.length}
-Available Beds,${beds.filter(b=>b.status==="Available").length}
-Occupied Beds,${beds.filter(b=>b.status==="Occupied").length}
-Maintenance Beds,${beds.filter(b=>b.status==="Maintenance").length}
-Low Stock Medicines,${medicines.filter(m=>m.status==="Low Stock").length}
-Expired Medicines,${medicines.filter(m=>m.status==="Expired").length}
-Revenue,${totalRevenue.innerText}
-`;
+    const canvas =
+        document.getElementById(
+            "doctorChart"
+        );
 
-    const blob = new Blob([csv],{
 
-        type:"text/csv"
+    if (!canvas) {
+        return;
+    }
 
-    });
 
-    const url = URL.createObjectURL(blob);
+    if (doctorChart) {
+        doctorChart.destroy();
+    }
 
-    const link = document.createElement("a");
 
-    link.href = url;
+    // The current Reports API does not provide
+    // department-wise doctor data.
+    // Therefore this chart uses the total doctor count.
 
-    link.download = "Hospital_Report.csv";
+    doctorChart =
+        new Chart(
+            canvas,
+            {
 
-    document.body.appendChild(link);
+                type: "bar",
 
-    link.click();
+                data: {
 
-    document.body.removeChild(link);
+                    labels: [
+                        "Total Doctors"
+                    ],
 
-    URL.revokeObjectURL(url);
+                    datasets: [{
+
+                        label:
+                            "Doctors",
+
+                        data: [
+                            Number(
+                                data.doctors || 0
+                            )
+                        ],
+
+                        borderWidth: 1
+
+                    }]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            ticks: {
+                                precision: 0
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
 
 }
+
+
 // ======================================================
-// DATE FILTER
+// NURSES BY SHIFT
 // ======================================================
 
-function filterByDate(){
+function renderNurseChart(data) {
 
-    const from = document.getElementById("fromDate").value;
+    const canvas =
+        document.getElementById(
+            "nurseChart"
+        );
 
-    const to = document.getElementById("toDate").value;
 
-    if(from==="" || to===""){
+    if (!canvas) {
+        return;
+    }
 
-        alert("Please select both dates.");
+
+    if (nurseChart) {
+        nurseChart.destroy();
+    }
+
+
+    // The current Reports API does not provide
+    // shift-wise nurse data.
+    // Therefore this chart uses total nurses.
+
+    nurseChart =
+        new Chart(
+            canvas,
+            {
+
+                type: "bar",
+
+                data: {
+
+                    labels: [
+                        "Total Nurses"
+                    ],
+
+                    datasets: [{
+
+                        label:
+                            "Nurses",
+
+                        data: [
+                            Number(
+                                data.nurses || 0
+                            )
+                        ],
+
+                        borderWidth: 1
+
+                    }]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            ticks: {
+                                precision: 0
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+}
+
+
+// ======================================================
+// RECENT ACTIVITIES
+// ======================================================
+
+function renderActivities(
+    activities
+) {
+
+    const table =
+        document.getElementById(
+            "activityTable"
+        );
+
+
+    if (!table) {
+        return;
+    }
+
+
+    activities =
+        activities || [];
+
+
+    if (activities.length === 0) {
+
+        table.innerHTML = `
+
+            <tr>
+
+                <td colspan="4"
+                    style="text-align:center;">
+
+                    No Recent Activities
+
+                </td>
+
+            </tr>
+
+        `;
 
         return;
 
     }
 
-    alert(
 
-        "Report generated from\n\n"
+    table.innerHTML = "";
 
-        + from +
 
-        "\n\nto\n\n"
+    activities.forEach(
+        activity => {
 
-        + to +
+            const row =
+                document.createElement(
+                    "tr"
+                );
 
-        "\n\n(Current version shows all data. Backend filtering will be added later.)"
 
+            row.innerHTML = `
+
+                <td>
+                    ${activity.AdmissionDate || "-"}
+                </td>
+
+                <td>
+                    Patients
+                </td>
+
+                <td>
+                    ${activity.PatientName || "-"}
+                    -
+                    ${activity.PatientStatus || "-"}
+                </td>
+
+                <td>
+                    ${activity.PatientStatus || "-"}
+                </td>
+
+            `;
+
+
+            table.appendChild(row);
+
+        }
     );
 
 }
+
+
 // ======================================================
-// REGISTER EVENTS
+// EXPORT CSV
 // ======================================================
 
-function registerEvents(){
+function exportCSV() {
 
-    document.getElementById("printReport")
-    .addEventListener("click",()=>{
+    fetch("/api/reports-data")
 
-        window.print();
+        .then(response =>
+            response.json()
+        )
 
-    });
+        .then(data => {
 
-    document.getElementById("downloadCSV")
-    .addEventListener("click",exportCSV);
+            if (!data.success) {
+                return;
+            }
 
-    document.getElementById("filterReport")
-    .addEventListener("click",filterByDate);
+
+            const rows = [
+
+                [
+                    "Category",
+                    "Total"
+                ],
+
+                [
+                    "Patients",
+                    data.patients
+                ],
+
+                [
+                    "Doctors",
+                    data.doctors
+                ],
+
+                [
+                    "Nurses",
+                    data.nurses
+                ],
+
+                [
+                    "Total Beds",
+                    data.beds
+                ],
+
+                [
+                    "Available Beds",
+                    data.available_beds
+                ],
+
+                [
+                    "Occupied Beds",
+                    data.occupied_beds
+                ],
+
+                [
+                    "Maintenance Beds",
+                    data.maintenance_beds
+                ],
+
+                [
+                    "Total Medicines",
+                    data.total_medicines
+                ],
+
+                [
+                    "Medicine Stock",
+                    data.medicine_stock
+                ],
+
+                [
+                    "Low Stock Medicines",
+                    data.low_stock
+                ],
+
+                [
+                    "Expired Medicines",
+                    data.expired_medicines
+                ]
+
+            ];
+
+
+            const csv =
+                rows.map(
+                    row =>
+                        row.join(",")
+                ).join("\n");
+
+
+            const blob =
+                new Blob(
+                    [csv],
+                    {
+                        type:
+                            "text/csv;charset=utf-8;"
+                    }
+                );
+
+
+            const url =
+                URL.createObjectURL(
+                    blob
+                );
+
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+
+            link.href = url;
+
+            link.download =
+                "hospital_report.csv";
+
+
+            link.click();
+
+
+            URL.revokeObjectURL(url);
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "CSV export error:",
+                error
+            );
+
+        });
 
 }
+
+
 // ======================================================
-// REFRESH DASHBOARD
-// ======================================================
-
-function refreshDashboard(){
-
-    loadData();
-
-    renderDashboard();
-
-    renderSummary();
-
-    refreshCharts();
-
-}
-// ======================================================
-// DESTROY OLD CHARTS
+// DATE FORMAT
 // ======================================================
 
-function refreshCharts(){
+function formatMonth(
+    monthValue
+) {
 
-    if(patientChart){
-
-        patientChart.destroy();
-
+    if (!monthValue) {
+        return "-";
     }
 
-    if(doctorChart){
 
-        doctorChart.destroy();
+    const parts =
+        monthValue.split("-");
 
+
+    if (parts.length !== 2) {
+        return monthValue;
     }
 
-    if(nurseChart){
 
-        nurseChart.destroy();
-
-    }
-
-    if(bedChart){
-
-        bedChart.destroy();
-
-    }
-
-    if(medicineChart){
-
-        medicineChart.destroy();
-
-    }
-
-    if(revenueChart){
-
-        revenueChart.destroy();
-
-    }
-
-    renderCharts();
-
-}
-// ======================================================
-// AUTO REFRESH EVERY 30 SECONDS
-// ======================================================
-
-setInterval(()=>{
-
-    refreshDashboard();
-
-},30000);
-// ======================================================
-// HOSPITAL PERFORMANCE SCORE
-// ======================================================
-
-function calculatePerformanceScore(){
-
-    let score = 100;
-
-    const occupiedBeds = beds.filter(
-        bed => bed.status === "Occupied"
-    ).length;
-
-    const maintenanceBeds = beds.filter(
-        bed => bed.status === "Maintenance"
-    ).length;
-
-    const lowStockMedicines = medicines.filter(
-        medicine => medicine.status === "Low Stock"
-    ).length;
-
-    const expiredMedicinesCount = medicines.filter(
-        medicine => medicine.status === "Expired"
-    ).length;
-
-    score -= maintenanceBeds * 5;
-
-    score -= lowStockMedicines * 2;
-
-    score -= expiredMedicinesCount * 5;
-
-    if(score < 0){
-
-        score = 0;
-
-    }
-
-    return {
-
-        score,
-
-        occupiedBeds,
-
-        maintenanceBeds,
-
-        lowStockMedicines,
-
-        expiredMedicinesCount
-
-    };
-
-}
-// ======================================================
-// EXECUTIVE SUMMARY
-// ======================================================
-
-function renderExecutiveSummary(){
-
-    const data = calculatePerformanceScore();
-
-    const tbody = document.getElementById("activityTable");
-
-    tbody.innerHTML += `
-
-    <tr>
-
-        <td>${new Date().toLocaleDateString()}</td>
-
-        <td>Analytics</td>
-
-        <td>
-
-        Hospital Performance Score :
-
-        ${data.score}%
-
-        </td>
-
-        <td>
-
-        Excellent
-
-        </td>
-
-    </tr>
-
-    `;
-
-}
-// ======================================================
-// LOW STOCK ALERT
-// ======================================================
-
-function showInventoryAlerts(){
-
-    const lowStock = medicines.filter(
-
-        medicine => medicine.status === "Low Stock"
-
-    ).length;
-
-    const expired = medicines.filter(
-
-        medicine => medicine.status === "Expired"
-
-    ).length;
-
-    if(lowStock > 0){
-
-        console.warn(
-
-            lowStock +
-
-            " medicines are running low."
-
+    const date =
+        new Date(
+            Number(parts[0]),
+            Number(parts[1]) - 1
         );
 
-    }
 
-    if(expired > 0){
-
-        console.warn(
-
-            expired +
-
-            " medicines have expired."
-
-        );
-
-    }
+    return date.toLocaleString(
+        "en-US",
+        {
+            month: "short",
+            year: "numeric"
+        }
+    );
 
 }
+
+
 // ======================================================
-// BED ALERT
-// ======================================================
-
-function showBedAlerts(){
-
-    const available = beds.filter(
-
-        bed => bed.status === "Available"
-
-    ).length;
-
-    if(available <= 5){
-
-        console.warn(
-
-            "Warning: Low Bed Availability."
-
-        );
-
-    }
-
-}
-// ======================================================
-// INITIALIZE
+// AUTO REFRESH
 // ======================================================
 
-function init(){
+setInterval(
+    loadReports,
+    30000
+);
 
-    loadData();
 
-    renderDashboard();
-
-    renderSummary();
-
-    renderCharts();
-
-    renderExecutiveSummary();
-
-    showInventoryAlerts();
-
-    showBedAlerts();
-
-    registerEvents();
-
-}
-// ======================================================
-// MODULE READY
-// ======================================================
-
-console.log("====================================");
-
-console.log("Hospital HMS");
-
-console.log("Reports & Analytics Module Ready");
-
-console.log("====================================");
+console.log(
+    "Hospital HMS Reports Loaded"
+);

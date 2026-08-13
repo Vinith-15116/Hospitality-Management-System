@@ -9,9 +9,9 @@
 
 <title>Pharmacy Management</title>
 
-<link rel="stylesheet" href="../static/css/dashboard.css">
+<link rel="stylesheet" href="/static/css/dashboard.css">
 
-<link rel="stylesheet" href="../static/css/pharmacy.css">
+<link rel="stylesheet" href="/static/css/pharmacy.css">
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -38,44 +38,72 @@
 <ul>
 
 <li>
-<a href="dashboard.html">
+<a href="/">
 <i class="fa-solid fa-house"></i>
-Dashboard
+<span>Dashboard</span>
 </a>
 </li>
 
 <li>
-<a href="patients.html">
+<a href="/patients-page">
 <i class="fa-solid fa-user-injured"></i>
-Patients
+<span>Patients</span>
 </a>
 </li>
 
 <li>
-<a href="doctors.html">
+<a href="/doctors-page">
 <i class="fa-solid fa-user-doctor"></i>
-Doctors
+<span>Doctors</span>
 </a>
 </li>
 
 <li>
-<a href="nurses.html">
+<a href="/nurses-page">
 <i class="fa-solid fa-user-nurse"></i>
-Nurses
+<span>Nurses</span>
 </a>
 </li>
 
 <li>
-<a href="beds.html">
+<a href="/beds-page">
 <i class="fa-solid fa-bed"></i>
-Beds
+<span>Beds</span>
 </a>
 </li>
 
 <li class="active">
-<a href="pharmacy.html">
+<a href="/pharmacy-page">
 <i class="fa-solid fa-pills"></i>
-Pharmacy
+<span>Pharmacy</span>
+</a>
+</li>
+
+<li>
+<a href="/prediction-page">
+<i class="fa-solid fa-brain"></i>
+<span>AI Prediction</span>
+</a>
+</li>
+
+<li>
+<a href="/analytics-page">
+<i class="fa-solid fa-chart-line"></i>
+<span>Analytics</span>
+</a>
+</li>
+
+<li>
+<a href="/reports-page">
+<i class="fa-solid fa-file-lines"></i>
+<span>Reports</span>
+</a>
+</li>
+
+<li>
+<a href="/logout">
+    <i class="fa-solid fa-right-from-bracket"></i>
+    <span>Logout</span>
 </a>
 </li>
 
@@ -117,6 +145,7 @@ Add Medicine
 </div>
 
 </header>
+
 <!-- ================= DASHBOARD CARDS ================= -->
 
 <section class="cards">
@@ -242,6 +271,7 @@ Add Medicine
 </table>
 
 </section>
+
 <!-- ================= ADD / EDIT MEDICINE MODAL ================= -->
 
 <div class="modal" id="medicineModal">
@@ -360,6 +390,7 @@ Close
 </div>
 
 </div>
+
 <!-- ================= DELETE MODAL ================= -->
 
 <div class="modal" id="deleteModal">
@@ -439,7 +470,7 @@ Next »
 
 </div>
 
-<script src="../static/js/pharmacy.js"></script>
+<script src="/static/js/pharmacy.js"></script>
 
 
 </body>

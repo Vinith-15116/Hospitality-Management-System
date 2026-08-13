@@ -11,10 +11,10 @@ content="width=device-width, initial-scale=1.0">
 <title>Nurses Management</title>
 
 <link rel="stylesheet"
-href="../static/css/dashboard.css">
+href="/static/css/dashboard.css">
 
 <link rel="stylesheet"
-href="../static/css/nurses.css">
+href="/static/css/nurses.css">
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
 rel="stylesheet">
@@ -43,75 +43,73 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 <ul>
 
 <li>
-
-<a href="dashboard.html">
-
+<a href="/">
 <i class="fa-solid fa-house"></i>
-
-Dashboard
-
+<span>Dashboard</span>
 </a>
-
 </li>
 
 <li>
-
-<a href="patients.html">
-
+<a href="/patients-page">
 <i class="fa-solid fa-user-injured"></i>
-
-Patients
-
+<span>Patients</span>
 </a>
-
 </li>
 
 <li>
-
-<a href="doctors.html">
-
+<a href="/doctors-page">
 <i class="fa-solid fa-user-doctor"></i>
-
-Doctors
-
+<span>Doctors</span>
 </a>
-
 </li>
 
 <li class="active">
-
-<a href="nurses.html">
-
+<a href="/nurses-page">
 <i class="fa-solid fa-user-nurse"></i>
-
-Nurses
-
+<span>Nurses</span>
 </a>
-
 </li>
 
 <li>
-
-<a href="beds.html">
-
+<a href="/beds-page">
 <i class="fa-solid fa-bed"></i>
-
-Beds
-
+<span>Beds</span>
 </a>
-
 </li>
 
 <li>
-
-<a href="pharmacy.html">
-
+<a href="/pharmacy-page">
 <i class="fa-solid fa-pills"></i>
-
-Pharmacy
-
+<span>Pharmacy</span>
 </a>
+</li>
 
+<li>
+<a href="/prediction-page">
+<i class="fa-solid fa-brain"></i>
+<span>AI Prediction</span>
+</a>
+</li>
+
+<li>
+<a href="/analytics-page">
+<i class="fa-solid fa-chart-line"></i>
+<span>Analytics</span>
+</a>
+</li>
+
+<li>
+<a href="/reports-page">
+<i class="fa-solid fa-file-lines"></i>
+<span>Reports</span>
+</a>
+</li>
+
+<li>
+<a href="/logout">
+    <i class="fa-solid fa-right-from-bracket"></i>
+    <span>Logout</span>
+</a>
 </li>
 
 </ul>
@@ -152,6 +150,7 @@ Add Nurse
 </div>
 
 </header>
+
 <!-- ================= DASHBOARD CARDS ================= -->
 
 <section class="cards">
@@ -247,23 +246,16 @@ Add Nurse
 <thead>
 
 <tr>
-
-<th>ID</th>
-
-<th>Name</th>
-
-<th>Department</th>
-
-<th>Qualification</th>
-
-<th>Experience</th>
-
-<th>Shift</th>
-
-<th>Status</th>
-
-<th>Actions</th>
-
+    <th>ID</th>
+    <th>Name</th>
+    <th>Department</th>
+    <th>Ward</th>
+    <th>Qualification</th>
+    <th>Experience</th>
+    <th>Shift</th>
+    <th>Status</th>
+    <th>Patients</th>
+    <th>Actions</th>
 </tr>
 
 </thead>
@@ -277,6 +269,7 @@ Add Nurse
 </table>
 
 </section>
+
 <!-- ================= ADD / EDIT NURSE MODAL ================= -->
 
 <div class="modal" id="nurseModal">
@@ -346,9 +339,8 @@ placeholder="Email Address">
 
 <select id="nurseStatus">
 
-<option>On Duty</option>
-
-<option>Off Duty</option>
+    <option>Active</option>
+    <option>on Leave</option>
 
 </select>
 
@@ -408,6 +400,7 @@ Close
 </div>
 
 </div>
+
 <!-- ================= DELETE MODAL ================= -->
 
 <div class="modal" id="deleteModal">
@@ -486,7 +479,7 @@ Next »
 
 </div>
 
-<script src="../static/js/nurses.js"></script>
+<script src="/static/js/nurses.js"></script>
 
 </body>
 

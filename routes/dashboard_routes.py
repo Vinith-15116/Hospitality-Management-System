@@ -1,9 +1,9 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify
 import mysql.connector
 from config import DB_CONFIG
 
 
-reports_bp = Blueprint("reports", __name__)
+dashboard_bp = Blueprint("dashboard", __name__)
 
 
 # =========================================================
@@ -15,76 +15,57 @@ def get_db_connection():
 
 
 # =========================================================
-# REPORTS DATA API
+# DASHBOARD DATA
 # =========================================================
 
-@reports_bp.route("/api/reports-data", methods=["GET"])
-def reports_data():
+@dashboard_bp.route("/api/dashboard-data", methods=["GET"])
+def dashboard_data():
 
     connection = None
     cursor = None
 
     try:
 
-        # -------------------------------------------------
-        # DATE FILTER
-        # -------------------------------------------------
-
-        from_date = request.args.get("from")
-        to_date = request.args.get("to")
-
-
         connection = get_db_connection()
         cursor = connection.cursor(dictionary=True)
-
-
-        # =================================================
-        # PATIENT FILTER
-        # =================================================
-
-        patient_filter = ""
-        patient_params = []
-
-
-        if from_date:
-
-            patient_filter += """
-                AND STR_TO_DATE(
-                    AdmissionDate,
-                    '%Y-%m-%d'
-                ) >= %s
-            """
-
-            patient_params.append(from_date)
-
-
-        if to_date:
-
-            patient_filter += """
-                AND STR_TO_DATE(
-                    AdmissionDate,
-                    '%Y-%m-%d'
-                ) <= %s
-            """
-
-            patient_params.append(to_date)
 
 
         # =================================================
         # PATIENTS
         # =================================================
 
-        cursor.execute(
-            f"""
+        cursor.execute("""
             SELECT COUNT(*) AS total
             FROM patients
-            WHERE 1=1
-            {patient_filter}
-            """,
-            patient_params
-        )
+        """)
 
         total_patients = cursor.fetchone()["total"]
+
+
+        # =================================================
+        # ADMISSIONS
+        # =================================================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM patients
+            WHERE PatientStatus = 'Admitted'
+        """)
+
+        admissions = cursor.fetchone()["total"]
+
+
+        # =================================================
+        # DISCHARGES
+        # =================================================
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM patients
+            WHERE PatientStatus IN ('Recovered', 'Discharged')
+        """)
+
+        discharges = cursor.fetchone()["total"]
 
 
         # =================================================
@@ -115,6 +96,8 @@ def reports_data():
         # BEDS
         # =================================================
 
+        # Total beds
+
         cursor.execute("""
             SELECT COUNT(*) AS total
             FROM beds
@@ -124,6 +107,7 @@ def reports_data():
 
 
         # Available beds
+        # Empty = Available
 
         cursor.execute("""
             SELECT COUNT(*) AS total
@@ -160,13 +144,7 @@ def reports_data():
         # PHARMACY
         # =================================================
 
-        cursor.execute("""
-            SELECT COUNT(*) AS total
-            FROM pharmacy
-        """)
-
-        total_medicines = cursor.fetchone()["total"]
-
+        # Total medicine quantity
 
         cursor.execute("""
             SELECT COALESCE(SUM(Quantity), 0) AS total
@@ -176,6 +154,18 @@ def reports_data():
         medicine_stock = cursor.fetchone()["total"]
 
 
+        # Total different medicines
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM pharmacy
+        """)
+
+        total_medicines = cursor.fetchone()["total"]
+
+
+        # Low stock medicines
+
         cursor.execute("""
             SELECT COUNT(*) AS total
             FROM pharmacy
@@ -184,6 +174,8 @@ def reports_data():
 
         low_stock = cursor.fetchone()["total"]
 
+
+        # Expired medicines
 
         cursor.execute("""
             SELECT COUNT(*) AS total
@@ -195,94 +187,68 @@ def reports_data():
 
 
         # =================================================
-        # MONTHLY PATIENTS
+        # RECENT ADMISSIONS
         # =================================================
 
-        cursor.execute(
-            f"""
+        cursor.execute("""
             SELECT
-                DATE_FORMAT(
-                    STR_TO_DATE(
-                        AdmissionDate,
-                        '%Y-%m-%d'
-                    ),
-                    '%Y-%m'
-                ) AS month,
+                p.PatientID,
+                p.PatientName,
+                p.DoctorAssigned,
+                b.Ward,
+                p.PatientStatus
+            FROM patients p
+            LEFT JOIN beds b
+                ON p.BedID = b.`Bed ID`
+            ORDER BY p.id DESC
+            LIMIT 6
+        """)
 
-                COUNT(*) AS total
-
-            FROM patients
-
-            WHERE AdmissionDate IS NOT NULL
-              AND AdmissionDate != ''
-
-              {patient_filter}
-
-            GROUP BY month
-
-            ORDER BY month
-            """,
-            patient_params
-        )
-
-        monthly_patients = cursor.fetchall()
+        recent_admissions = cursor.fetchall()
 
 
         # =================================================
         # DISEASE DISTRIBUTION
         # =================================================
 
-        cursor.execute(
-            f"""
+        cursor.execute("""
             SELECT
                 Disease,
                 COUNT(*) AS total
-
             FROM patients
-
             WHERE Disease IS NOT NULL
               AND Disease != ''
-
-              {patient_filter}
-
             GROUP BY Disease
-
             ORDER BY total DESC
-
             LIMIT 10
-            """,
-            patient_params
-        )
+        """)
 
         disease_distribution = cursor.fetchall()
 
 
         # =================================================
-        # RECENT ACTIVITIES
+        # MONTHLY PATIENTS
         # =================================================
 
-        cursor.execute(
-            f"""
+        cursor.execute("""
             SELECT
-                AdmissionDate,
-                PatientName,
-                PatientStatus
-
+                DATE_FORMAT(
+                    STR_TO_DATE(AdmissionDate, '%Y-%m-%d'),
+                    '%Y-%m'
+                ) AS month,
+                COUNT(*) AS total
             FROM patients
-
             WHERE AdmissionDate IS NOT NULL
               AND AdmissionDate != ''
+              AND STR_TO_DATE(
+                    AdmissionDate,
+                    '%Y-%m-%d'
+                  ) IS NOT NULL
+            GROUP BY month
+            ORDER BY month
+        """)
 
-              {patient_filter}
-
-            ORDER BY id DESC
-
-            LIMIT 10
-            """,
-            patient_params
-        )
-
-        recent_activities = cursor.fetchall()
+        monthly_patients = cursor.fetchall()
 
 
         # =================================================
@@ -293,9 +259,8 @@ def reports_data():
 
             "success": True,
 
-            "from_date": from_date,
 
-            "to_date": to_date,
+            # Dashboard statistics
 
             "patients": total_patients,
 
@@ -311,19 +276,32 @@ def reports_data():
 
             "maintenance_beds": maintenance_beds,
 
-            "total_medicines": total_medicines,
+            "admissions": admissions,
+
+            "discharges": discharges,
 
             "medicine_stock": medicine_stock,
+
+            "total_medicines": total_medicines,
 
             "low_stock": low_stock,
 
             "expired_medicines": expired_medicines,
 
-            "monthly_patients": monthly_patients,
+
+            # Recent admissions
+
+            "recent_admissions": recent_admissions,
+
+
+            # Disease distribution
 
             "disease_distribution": disease_distribution,
 
-            "recent_activities": recent_activities
+
+            # Monthly patients
+
+            "monthly_patients": monthly_patients
 
         })
 
@@ -334,7 +312,7 @@ def reports_data():
 
     except Exception as e:
 
-        print("REPORTS ERROR:", e)
+        print("DASHBOARD ERROR:", e)
 
         return jsonify({
 
@@ -344,6 +322,10 @@ def reports_data():
 
         }), 500
 
+
+    # =====================================================
+    # CLOSE DATABASE
+    # =====================================================
 
     finally:
 
