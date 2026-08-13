@@ -3,17 +3,28 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DB_HOST = os.getenv("MYSQLHOST", os.getenv("DB_HOST", "localhost"))
-DB_USER = os.getenv("MYSQLUSER", os.getenv("DB_USER", "root"))
-DB_PASSWORD = os.getenv("MYSQLPASSWORD", os.getenv("DB_PASSWORD", ""))
-DB_NAME = os.getenv("MYSQLDATABASE", os.getenv("DB_NAME", "hospital_hms"))
+# =========================================================
+# DATABASE CONFIGURATION
+# Local + Railway
+# =========================================================
+
+DB_HOST = os.getenv("MYSQLHOST") or os.getenv("DB_HOST") or "localhost"
+
+DB_USER = os.getenv("MYSQLUSER") or os.getenv("DB_USER") or "root"
+
+DB_PASSWORD = os.getenv("MYSQLPASSWORD") or os.getenv("DB_PASSWORD") or ""
+
+DB_NAME = os.getenv("MYSQLDATABASE") or os.getenv("DB_NAME") or "hospital_hms"
 
 DB_PORT = int(
-    os.getenv(
-        "MYSQLPORT",
-        os.getenv("DB_PORT", "3306")
-    )
+    os.getenv("MYSQLPORT")
+    or os.getenv("DB_PORT")
+    or "3306"
 )
+
+# =========================================================
+# DATABASE CONFIGURATION OBJECT
+# =========================================================
 
 DB_CONFIG = {
     "host": DB_HOST,
